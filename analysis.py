@@ -74,3 +74,7 @@ with open(inputFile, 'rb') as input :
     standardDevs.append(math.sqrt(variance))
   print("Standard Deviations by year:")
   print(standardDevs)
+
+	#print(sortedLaws)
+
+	#plt.bar(sortedLaws,sortedCounts)
