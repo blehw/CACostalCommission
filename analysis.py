@@ -29,14 +29,38 @@ with open(inputFile, 'rb') as input :
    			counts.append(0)
    			columns.append(counter)
    		counter += 1
-   	year = headers[1]
+   	year = '2016'
    	yearlyCounts = []
    	for row in reader:
    		if (row[1] != year) or (reader.line_num == lastLineNum):
    			yearlyCounts.append(counts)
    			year = row[1]
-   			print(year)
+   			for i in range(0, len(counts)):
+   				counts[i] = 0
 	   	for value in columns:
 	   		if (row[value] != '0'):
 	   			counts[value - columns[0]] += int(row[value])
 
+'''
+for year in yearlyCounts:
+	print("New Year")
+	champs = []
+	indices = []
+	for i in range(0, 10):
+		indices.append(i)
+		champs.append(int(year[i]))
+	minimum = min(champs)
+	for i in range(10, len(year)):
+		if int(year[i]) > minimum:
+			minIndex = champs.index(minimum)
+			champs.remove(minimum)
+			indices.remove(indices[minIndex])
+			champs.append(year[i])
+			indices.append(i)
+			minimum = min(champs)
+	topLaws = []
+	for i in indices:
+		topLaws.append(laws[i])
+	print(champs)
+	print(indices)
+'''
