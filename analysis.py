@@ -54,6 +54,5 @@ with open(inputFile, 'rb') as input :
 		countsDictionary[laws[i]] = totalCounts[i]
 	sortedCounts = sorted(totalCounts)
 	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
-	#print(sortedLaws)
-
+	
 	#plt.bar(sortedLaws,sortedCounts)
