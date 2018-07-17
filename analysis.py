@@ -16,7 +16,7 @@ def isLaw(s):
 	except ValueError:
 		return False
 
-inputFile = 'all_data_v3_w_text_1.csv'
+inputFile = 'all_data_v3.csv'
 with open(inputFile, 'rb') as input :
 	reader = csv.reader(input)
 	lastLineNum = rowCount(inputFile)
@@ -43,37 +43,39 @@ with open(inputFile, 'rb') as input :
 			if (row[value] != '0'):
 				counts[value - columns[0]] += int(row[value])
 
-# POPULARITY
 
-	#sortedLaws prints out a list of the most popular laws, in descending order
-	totalCounts = [0] * len(yearlyCounts[0])
-	for year in yearlyCounts:
-		for i in range(0, len(year)):
-			totalCounts[i] += year[i]
+	# # POPULARITY
 
-	countsDictionary = {}
-	for i in range(0, len(laws)):
-		countsDictionary[laws[i]] = totalCounts[i]
-	sortedCounts = sorted(totalCounts)
-	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
+	# #sortedLaws prints out a list of the most popular laws, in descending order
+	# totalCounts = [0] * len(yearlyCounts[0])
+	# for year in yearlyCounts:
+	# 	for i in range(0, len(year)):
+	# 		totalCounts[i] += year[i]
+
+	# countsDictionary = {}
+	# for i in range(0, len(laws)):
+	# 	countsDictionary[laws[i]] = totalCounts[i]
+	# sortedCounts = sorted(totalCounts)
+	# sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
 
 
-# STANDARD DEVIATION
 
-  standardDevs = []
-  for i in range(len(laws)):
-    # calculate mean for this ith law
-    countSum = 0
-    for year in yearlyCounts:
-      countSum += year[i]
-    mean = countSum / len(yearlyCounts)
-    squaredDiffSum = 0
-    for year in yearlyCounts:
-      squaredDiffSum += (year[i] - mean)**2
-    variance = squaredDiffSum / len(yearlyCounts)
-    standardDevs.append(math.sqrt(variance))
-  print("Standard Deviations by year:")
-  print(standardDevs)
+	# STANDARD DEVIATION
+
+  # standardDevs = []
+  # for i in range(len(laws)):
+  # # calculate mean for this ith law
+  #   countSum = 0
+  #   for year in yearlyCounts:
+  #   	countSum += year[i]
+  #   mean = countSum / len(yearlyCounts)
+  #   squaredDiffSum = 0
+  #   for year in yearlyCounts:
+  #   	squaredDiffSum += (year[i] - mean)**2
+  #   variance = squaredDiffSum / len(yearlyCounts)
+  #   standardDevs.append(math.sqrt(variance))
+  # print("Standard Deviations by year:")
+  # print(standardDevs)
 
 	#print(sortedLaws)
 
