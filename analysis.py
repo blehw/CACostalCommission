@@ -43,6 +43,8 @@ with open(inputFile, 'rb') as input :
 			if (row[value] != '0'):
 				counts[value - columns[0]] += int(row[value])
 
+# POPULARITY
+
 	#sortedLaws prints out a list of the most popular laws, in descending order
 	totalCounts = [0] * len(yearlyCounts[0])
 	for year in yearlyCounts:
@@ -54,5 +56,24 @@ with open(inputFile, 'rb') as input :
 		countsDictionary[laws[i]] = totalCounts[i]
 	sortedCounts = sorted(totalCounts)
 	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
-	
+
+# STANDARD DEVIATION
+
+  standardDevs = []
+  for i in range(len(laws)):
+    # calculate mean for this ith law
+    countSum = 0
+    for year in yearlyCounts:
+      countSum += year[i]
+    mean = countSum / len(yearlyCounts)
+    squaredDiffSum = 0
+    for year in yearlyCounts:
+      squaredDiffSum += (year[i] - mean)**2
+    variance = squaredDiffSum / len(yearlyCounts)
+    standardDevs.append(math.sqrt(variance))
+  print("Standard Deviations by year:")
+  print(standardDevs)
+
+	#print(sortedLaws)
+
 	#plt.bar(sortedLaws,sortedCounts)
