@@ -1,7 +1,7 @@
 import sys
 import csv
 #pip install matplotlib
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import math
 
 csv.field_size_limit(sys.maxsize)
@@ -57,11 +57,12 @@ with open(inputFile, encoding='ISO-8859-1') as input:
 		countsDictionary[laws[i]] = totalCounts[i]
 	sortedCounts = sorted(totalCounts)
 	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
-	print(sortedLaws)
+	#print(sortedLaws)
 
 	# STANDARD DEVIATION
 
 	standardDevs = []
+	sdAsPercentage = []
 	for i in range(len(laws)):
 	# calculate mean for this ith law
 		countSum = 0
@@ -73,9 +74,23 @@ with open(inputFile, encoding='ISO-8859-1') as input:
 			squaredDiffSum += (year[i] - mean)**2
 		variance = squaredDiffSum / len(yearlyCounts)
 		standardDevs.append(math.sqrt(variance))
-	#print("Standard Deviations by year:")
+		if (mean != 0):
+			sdAsPercentage.append(math.sqrt(variance) / mean)
+		else:
+			sdAsPercentage.append(100)
+	print(sdAsPercentage)
+
+	sdDictionary = {}
+	for i in range(0, len(laws)):
+		sdDictionary[laws[i]] = sdAsPercentage[i]
+	sortedSD = sorted(sdAsPercentage)
+	sortedSDLaws = sorted(sdDictionary, key=sdDictionary.get, reverse=True)
+	#print(sortedSD)
+	#print(sortedSDLaws)
 	#print(standardDevs)
+	for law in sortedSDLaws:
+		print(law + " " + str(sdDictionary[law]) + " " + str(countsDictionary[law]))
 
-	#print(sortedLaws)
-
-	plt.bar(sortedLaws,sortedCounts)
+	#plt.bar(sortedLaws,sortedCounts, color='blue')
+	#plt.xticks(rotation=90)
+	#plt.show()
