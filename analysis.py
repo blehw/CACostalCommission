@@ -41,32 +41,14 @@ with open(inputFile, 'rb') as input :
 	   		if (row[value] != '0'):
 	   			counts[value - columns[0]] += int(row[value])
 
+	#sortedLaws prints out a list of the most popular laws, in descending order
 	totalCounts = [0] * len(yearlyCounts[0])
 	for year in yearlyCounts:
 		for i in range(0, len(year)):
 			totalCounts[i] += year[i]
-	print(totalCounts)
-
-'''
-for year in yearlyCounts:
-	print("New Year")
-	champs = []
-	indices = []
-	for i in range(0, 10):
-		indices.append(i)
-		champs.append(int(year[i]))
-	minimum = min(champs)
-	for i in range(10, len(year)):
-		if int(year[i]) > minimum:
-			minIndex = champs.index(minimum)
-			champs.remove(minimum)
-			indices.remove(indices[minIndex])
-			champs.append(year[i])
-			indices.append(i)
-			minimum = min(champs)
-	topLaws = []
-	for i in indices:
-		topLaws.append(laws[i])
-	print(champs)
-	print(indices)
-'''
+	
+	countsDictionary = {}
+	for i in range(0, len(laws)):
+		countsDictionary[laws[i]] = totalCounts[i]
+	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
+	print(sortedLaws)
