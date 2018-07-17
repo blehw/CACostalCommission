@@ -2,11 +2,12 @@ import sys
 import csv
 #pip install matplotlib
 #import matplotlib.pyplot as plt
+import math
 
 csv.field_size_limit(sys.maxsize)
 
 def rowCount(filename):
-	with open(filename) as in_file:
+	with open(filename, encoding='ISO-8859-1') as in_file:
 		return sum(1 for _ in in_file)
 
 def isLaw(s):
@@ -17,7 +18,7 @@ def isLaw(s):
 		return False
 
 inputFile = 'all_data_v3_w_text_1.csv'
-with open(inputFile, 'rb') as input :
+with open(inputFile, encoding='ISO-8859-1') as input:
 	reader = csv.reader(input)
 	lastLineNum = rowCount(inputFile)
 	headers = next(reader)
@@ -43,7 +44,7 @@ with open(inputFile, 'rb') as input :
 			if (row[value] != '0'):
 				counts[value - columns[0]] += int(row[value])
 
-# POPULARITY
+	# POPULARITY
 
 	#sortedLaws prints out a list of the most popular laws, in descending order
 	totalCounts = [0] * len(yearlyCounts[0])
@@ -56,24 +57,25 @@ with open(inputFile, 'rb') as input :
 		countsDictionary[laws[i]] = totalCounts[i]
 	sortedCounts = sorted(totalCounts)
 	sortedLaws = sorted(countsDictionary, key=countsDictionary.get, reverse=True)
+	print(sortedLaws)
 
-# STANDARD DEVIATION
+	# STANDARD DEVIATION
 
-  standardDevs = []
-  for i in range(len(laws)):
-    # calculate mean for this ith law
-    countSum = 0
-    for year in yearlyCounts:
-      countSum += year[i]
-    mean = countSum / len(yearlyCounts)
-    squaredDiffSum = 0
-    for year in yearlyCounts:
-      squaredDiffSum += (year[i] - mean)**2
-    variance = squaredDiffSum / len(yearlyCounts)
-    standardDevs.append(math.sqrt(variance))
-  print("Standard Deviations by year:")
-  print(standardDevs)
+	standardDevs = []
+	for i in range(len(laws)):
+	# calculate mean for this ith law
+		countSum = 0
+		for year in yearlyCounts:
+			countSum += year[i]
+		mean = countSum / len(yearlyCounts)
+		squaredDiffSum = 0
+		for year in yearlyCounts:
+			squaredDiffSum += (year[i] - mean)**2
+		variance = squaredDiffSum / len(yearlyCounts)
+		standardDevs.append(math.sqrt(variance))
+	#print("Standard Deviations by year:")
+	#print(standardDevs)
 
 	#print(sortedLaws)
 
-	#plt.bar(sortedLaws,sortedCounts)
+	plt.bar(sortedLaws,sortedCounts)
