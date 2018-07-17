@@ -33,13 +33,19 @@ with open(inputFile, 'rb') as input :
    	yearlyCounts = []
    	for row in reader:
    		if (row[1] != year) or (reader.line_num == lastLineNum):
-   			yearlyCounts.append(counts)
+   			yearlyCounts.append(counts[:])
    			year = row[1]
    			for i in range(0, len(counts)):
    				counts[i] = 0
 	   	for value in columns:
 	   		if (row[value] != '0'):
 	   			counts[value - columns[0]] += int(row[value])
+
+	totalCounts = [0] * len(yearlyCounts[0])
+	for year in yearlyCounts:
+		for i in range(0, len(year)):
+			totalCounts[i] += year[i]
+	print(totalCounts)
 
 '''
 for year in yearlyCounts:
