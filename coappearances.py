@@ -27,7 +27,8 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
       for i in range(len(row[8:])):
         if row[8+i] == '1':
           for j in range(len(pubAccMentioned)):
-            matrix[pubAccMentioned[j]][i] += 1
+            if 8+i != j+85:
+              matrix[pubAccMentioned[j]][i] += 1
   print(matrix)
 
   # write into csv
