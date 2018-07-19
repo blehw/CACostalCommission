@@ -8,6 +8,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
   reader = csv.reader(csvFile)
   headers = next(reader)
 
+
   pubAccInd = [85, 86, 87, 88, 89, 90] # indices of Public Access sections 30210, 30211, 30212, 30212.5, 30213, and 30214
   
   # set up 6 by (# sections) matrix
@@ -29,6 +30,22 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
           for j in range(len(pubAccMentioned)):
             if 8+i != j+85:
               matrix[pubAccMentioned[j]][i] += 1
-  print(matrix)
+  
+  
+
+  for i in range(len(matrix)):
+    print(matrix[i])
 
   # write into csv
+
+  sections = ['30210', '30211', '30212', '30212.5', '30213', '30214']
+
+  output = open('public_access_co_appearances.csv', 'w')
+  output.write(',')
+  writer = csv.writer(output, delimiter = ',')
+  writer.writerow(headers[8:])
+  for i in range(len(sections)):
+    output.write(sections[i] + ',')
+    writer.writerow(matrix[i])
+
+  output.close()
