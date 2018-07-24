@@ -50,7 +50,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
   output.write('\n')
 
   for i in range(len(sections)):
-    print('hello')
     output.write(sections[i])
     for j in indices:
       output.write(',' + str(matrix[i][j]))
