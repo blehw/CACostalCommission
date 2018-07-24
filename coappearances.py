@@ -28,24 +28,32 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
       for i in range(len(row[8:])):
         if row[8+i] == '1':
           for j in range(len(pubAccMentioned)):
-            if 8+i != j+85:
+            if (8+i != pubAccMentioned[j]+85):
               matrix[pubAccMentioned[j]][i] += 1
-  
-  
-
-  for i in range(len(matrix)):
-    print(matrix[i])
 
   # write into csv
 
   sections = ['30210', '30211', '30212', '30212.5', '30213', '30214']
 
   output = open('public_access_co_appearances.csv', 'w')
-  output.write(',')
   writer = csv.writer(output, delimiter = ',')
-  writer.writerow(headers[8:])
+  indices = []
+  minMentioned = 50 # change this num to remove any law that is not mentioned at least this many times in relation with a public access law
+  for i in range(len(headers[8:])):
+    writeable = False
+    for j in range(len(pubAccInd)):
+      if matrix[j][i] > minMentioned:
+        writeable = True
+    if writeable:
+      output.write(',' + headers[8+i])
+      indices.append(i)
+  output.write('\n')
+
   for i in range(len(sections)):
-    output.write(sections[i] + ',')
-    writer.writerow(matrix[i])
+    print('hello')
+    output.write(sections[i])
+    for j in indices:
+      output.write(',' + str(matrix[i][j]))
+    output.write('\n')
 
   output.close()
