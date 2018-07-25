@@ -1,6 +1,7 @@
 import sys
 import csv
 import math
+import matplotlib.pyplot as plt
 
 inputFile = 'all_data_v3.csv'
 
@@ -56,3 +57,33 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
     output.write('\n')
 
   output.close()
+
+# create new matrix
+with open('public_access_co_appearances.csv', encoding='ISO-8859-1') as csvFile:
+  reader = csv.reader(csvFile)
+  headers = next(reader)[1:]
+
+  new_matrix = []
+  for i in range(len(matrix)):
+    new_matrix.append(next(reader)[1:])
+
+  # plot onto graph
+  flattened = [0] * len(new_matrix[0]) # summing together all the rows of matrix
+  for i in range(len(new_matrix)):
+    for j in range(len(new_matrix[0])):
+      flattened[j] += int(new_matrix[i][j])
+
+  plt.rcParams.update({'font.size': 5})
+  plt.title('Co-appearances of All Sections with Public Access Sections 1996-2016')
+  plt.xlabel('Sections', fontsize=8)
+  plt.ylabel('Total number of co-appearances with Public Access sections', fontsize=8)
+  plt.bar(headers, flattened)
+  plt.show()
+
+
+
+
+
+
+
+
