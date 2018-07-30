@@ -3,6 +3,7 @@ import csv
 #pip install matplotlib
 import matplotlib.pyplot as plt
 import math
+from statistics import mode
 
 csv.field_size_limit(sys.maxsize)
 inputFile = 'all_data_v3.csv'
@@ -109,6 +110,21 @@ def graph(laws, counts):
 	plt.show()
 
 def nbcTrain(columns, laws, file):
+	subDescriptions = []
+	subDtypes = []
+	with open('SampleTask2_1000.csv', encoding='ISO-8859-1') as input:
+		reader = csv.reader(input)
+		next(reader)
+		for row in reader:
+			subDescriptions.append(row[0])
+			handCode = []
+			for i in range(1, 4):
+				handCode.append(row[i])
+			if len(set(handCode)) == len(handCode):
+				subDtypes.append(handCode[0])
+			else:
+				subDtypes.append(mode(handCode))
+
 	with open(inputFile, encoding='ISO-8859-1') as input:
 		# magic numbers
 		types = 13
@@ -124,7 +140,7 @@ def nbcTrain(columns, laws, file):
 
 		# counts of true/false for column based on accepted/other
 		counts = [[0,0,0,0] for i in range(inputs)]
-
+		
 		for case in reader:
 			if reader.line_num > trainNum:
 				# outcome variable is 0 if rejected, 1 if approved
@@ -148,6 +164,15 @@ def nbcTrain(columns, laws, file):
 							counts[i][2] += 1
 						else:
 							counts[i][3] += 1
+
+				# get the description
+				description = case[2]
+				for i in range(len(subDescriptions)):
+					if subDescriptions[i].strip() in description.strip():
+						print(subDtypes[i])
+					else:
+						print(description)
+						print(subDescriptions[i])
 
 				# loop through bylaws, increment values based on outcome
 				num = types

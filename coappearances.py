@@ -8,7 +8,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
   reader = csv.reader(csvFile)
   headers = next(reader)
 
-
+  # make easier to change
   pubAccInd = [85, 86, 87, 88, 89, 90] # indices of Public Access sections 30210, 30211, 30212, 30212.5, 30213, and 30214
   
   # set up 6 by (# sections) matrix
