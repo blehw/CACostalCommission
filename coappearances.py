@@ -74,9 +74,9 @@ with open('public_access_co_appearances.csv', encoding='ISO-8859-1') as csvFile:
       flattened[j] += int(new_matrix[i][j])
 
   plt.rcParams.update({'font.size': 5})
-  plt.title('Co-appearances of All Sections with Public Access Sections 1996-2016')
-  plt.xlabel('Sections', fontsize=8)
-  plt.ylabel('Total number of co-appearances with Public Access sections', fontsize=8)
+  plt.title('Co-appearances of All Sections with Public Access Sections 1996-2016', fontsize=10)
+  plt.xlabel('Sections', fontsize=10)
+  plt.ylabel('Total number of co-appearances with Public Access sections', fontsize=10)
   plt.bar(headers, flattened)
   plt.show()
 
