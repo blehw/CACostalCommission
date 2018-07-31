@@ -3,6 +3,7 @@ import csv
 #pip install matplotlib
 import matplotlib.pyplot as plt
 import math
+from statistics import mode
 
 csv.field_size_limit(sys.maxsize)
 inputFile = 'all_data_v3.csv'
@@ -109,6 +110,21 @@ def graph(laws, counts):
 	plt.show()
 
 def nbcTrain(columns, laws, file):
+	subDescriptions = []
+	subDtypes = []
+	with open('SampleTask2_1000.csv', encoding='ISO-8859-1') as input:
+		reader = csv.reader(input)
+		next(reader)
+		for row in reader:
+			subDescriptions.append(' '.join(row[0].split()).strip())
+			handCode = []
+			for i in range(1, 4):
+				handCode.append(row[i])
+			if len(set(handCode)) == len(handCode):
+				subDtypes.append(handCode[0])
+			else:
+				subDtypes.append(mode(handCode))
+
 	with open(inputFile, encoding='ISO-8859-1') as input:
 		# magic numbers
 		types = 13
@@ -116,6 +132,8 @@ def nbcTrain(columns, laws, file):
 		outcomeColumn = 4
 		trainNum = 800
 		totalInstances = rows - trainNum
+
+		x = 0
 
 		reader = csv.reader(input)
 		# number of values in each training instance
@@ -149,6 +167,19 @@ def nbcTrain(columns, laws, file):
 						else:
 							counts[i][3] += 1
 
+				# get the description
+				description = ' '.join(case[2].split()).strip()
+				for i in range(len(subDescriptions)):
+					if subDescriptions[i] in description:
+						#print(subDtypes[i])
+						x += 1
+						subDescriptions.remove(subDescriptions[i])
+						break
+				if 'richard holmgren' in description:
+					print(description)
+				#else:
+						#print(subDescriptions[i])
+
 				# loop through bylaws, increment values based on outcome
 				num = types
 				for i in columns:
@@ -163,6 +194,9 @@ def nbcTrain(columns, laws, file):
 						else:
 							counts[num][3] += 1
 					num += 1
+
+		print(subDescriptions)
+		print(x)
 
 		# divide by total rows to get percentages, with laplace estimators
 		# if a value is 0, add 1 to it (so its not 'impossible')

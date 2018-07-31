@@ -38,11 +38,10 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	popularWords = sorted(d, key=d.get, reverse=True)
 	wordFile = open('popular_words.txt', 'w')
 	for i in range(500):
-		wordFile.write('%s' % popularWords[i])
+		wordFile.write('%s\n' % popularWords[i])
 
-	f = open('popular_words.txt', 'r')
-	popularWords = f.readlines()
-	f.close()
+	with open('popular_words.txt') as f:
+		popularWords = f.read().splitlines()
 	print(popularWords)
 
 	centers = []
@@ -53,6 +52,8 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			c.append(random.uniform(0, 1))
 		centers.append(numpy.array(c))
 
+	#print(centers)
+
 	csvFile.seek(0)
 	for row in reader:
 		vector = []
@@ -62,6 +63,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			else:
 				vector.append(0)
 		v = numpy.array(vector)
+		#print(v)
 
 		minDist = numpy.linalg.norm(v-centers[0])
 		minIndex = 0
@@ -74,8 +76,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		clusters[i].append(reader.line_num)
 
 	for cluster in clusters:
-		if (len(cluster) > 1):
-			print('boop')
+		print(cluster)
 
 
 
