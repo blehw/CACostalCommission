@@ -264,8 +264,8 @@ def nbcPred(columns, laws, file, mles):
 				# if (typeNum == 1):
 
 				# probability for type
-				p0 = mles[typeNum - 1][1] / (mles[typeNum - 1][0] + mles[num][1])
-				p1 = mles[typeNum - 1][3] / (mles[typeNum - 1][2] + mles[num][3])
+				p0 = mles[typeNum - 1][1] / (mles[typeNum - 1][0] + mles[typeNum - 1][1])
+				p1 = mles[typeNum - 1][3] / (mles[typeNum - 1][2] + mles[typeNum - 1][3])
 				pred0 = pred0 * p0
 				pred1 = pred1 * p1
 
