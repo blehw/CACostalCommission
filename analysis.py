@@ -47,7 +47,6 @@ def getYearlyCounts():
 					counts[value - columns[0]] += int(row[value])
 		return columns, laws, yearlyCounts
 
-
 # POPULARITY
 
 #sortedLaws prints out a list of the most popular laws, in descending order
@@ -112,32 +111,32 @@ def graph(laws, counts):
 def nbcTrain(columns, laws, file):
 	subDescriptions = []
 	subDtypes = []
-	with open('SampleTask2_1000.csv', encoding='ISO-8859-1') as input:
+	with open('Handcode.csv', encoding='ISO-8859-1') as input:
 		reader = csv.reader(input)
 		next(reader)
 		for row in reader:
-			subDescriptions.append(' '.join(row[0].split()).strip())
-			handCode = []
-			for i in range(1, 4):
-				handCode.append(row[i])
-			if len(set(handCode)) == len(handCode):
-				subDtypes.append(handCode[0])
-			else:
-				subDtypes.append(mode(handCode))
+			if row[11] != 'NA':
+				subDescriptions.append(row[11])
+				handCode = []
+				for i in range(2, 5):
+					handCode.append(row[i])
+				if len(set(handCode)) == len(handCode):
+					subDtypes.append(int(handCode[0]))
+				else:
+					subDtypes.append(int(mode(handCode)))
 
 	with open(inputFile, encoding='ISO-8859-1') as input:
 		# magic numbers
 		types = 13
+		handCodeTypes = 12
 		typeColumn = 6
 		outcomeColumn = 4
 		trainNum = 800
 		totalInstances = rows - trainNum
 
-		x = 0
-
 		reader = csv.reader(input)
 		# number of values in each training instance
-		inputs = len(laws) + types
+		inputs = len(laws) + types + handCodeTypes
 		next(reader)
 
 		# counts of true/false for column based on accepted/other
@@ -168,20 +167,27 @@ def nbcTrain(columns, laws, file):
 							counts[i][3] += 1
 
 				# get the description
-				description = ' '.join(case[2].split()).strip()
+				description = case[2]
 				for i in range(len(subDescriptions)):
 					if subDescriptions[i] in description:
 						#print(subDtypes[i])
-						x += 1
-						subDescriptions.remove(subDescriptions[i])
-						break
-				if 'richard holmgren' in description:
-					print(description)
-				#else:
-						#print(subDescriptions[i])
+						#subDescriptions.remove(subDescriptions[i])
+						handCodeTypeNum = subDtypes[i]
+						if outcome == 0:
+							for j in range(handCodeTypes):
+								if j != handCodeTypeNum - 1:
+									counts[types + j][0] += 1
+								else:
+									counts[types + j][1] += 1
+						else:
+							for j in range(handCodeTypes):
+								if j != handCodeTypeNum - 1:
+									counts[types + j][2] += 1
+								else:
+									counts[types + j][3] += 1
 
 				# loop through bylaws, increment values based on outcome
-				num = types
+				num = types + handCodeTypes
 				for i in columns:
 					if outcome == 0:
 						if case[i] == '0':
@@ -194,9 +200,6 @@ def nbcTrain(columns, laws, file):
 						else:
 							counts[num][3] += 1
 					num += 1
-
-		print(subDescriptions)
-		print(x)
 
 		# divide by total rows to get percentages, with laplace estimators
 		# if a value is 0, add 1 to it (so its not 'impossible')
@@ -227,16 +230,33 @@ def nbcTrain(columns, laws, file):
 		return mles
 
 def nbcPred(columns, laws, file, mles):
+	subDescriptions = []
+	subDtypes = []
+	with open('Handcode.csv', encoding='ISO-8859-1') as input:
+		reader = csv.reader(input)
+		next(reader)
+		for row in reader:
+			if row[11] != 'NA':
+				subDescriptions.append(row[11])
+				handCode = []
+				for i in range(2, 5):
+					handCode.append(row[i])
+				if len(set(handCode)) == len(handCode):
+					subDtypes.append(int(handCode[0]))
+				else:
+					subDtypes.append(int(mode(handCode)))
+
 	with open(inputFile, encoding='ISO-8859-1') as input:
 		# magic numbers
 		types = 13
+		handCodeTypes = 12
 		typeColumn = 6
 		outcomeColumn = 4
 		trainNum = 800
 
 		reader = csv.reader(input)
 		# number of values in each training instance
-		inputs = len(laws) + types
+		inputs = len(laws) + types + handCodeTypes
 		next(reader)
 
 		tested0 = 0
@@ -246,6 +266,8 @@ def nbcPred(columns, laws, file, mles):
 
 		accepted = 0
 
+		x = 0
+
 		for case in reader:
 			if reader.line_num <= trainNum:
 				# outcome variable is 0 if rejected, 1 if approved
@@ -254,7 +276,7 @@ def nbcPred(columns, laws, file, mles):
 				if 'APPROVED' in outcomeStr:
 					outcome = 1
 
-				num = types
+				num = types + handCodeTypes
 				pred0 = 1
 				pred1 = 1
 
@@ -264,10 +286,21 @@ def nbcPred(columns, laws, file, mles):
 				# if (typeNum == 1):
 
 				# probability for type
-				p0 = mles[typeNum - 1][1] / (mles[typeNum - 1][0] + mles[num][1])
-				p1 = mles[typeNum - 1][3] / (mles[typeNum - 1][2] + mles[num][3])
+				p0 = (mles[typeNum - 1][1] / (mles[typeNum - 1][0] + mles[typeNum - 1][1]))
+				p1 = (mles[typeNum - 1][3] / (mles[typeNum - 1][2] + mles[typeNum - 1][3]))
 				pred0 = pred0 * p0
 				pred1 = pred1 * p1
+
+				description = case[2]
+				for i in range(len(subDescriptions)):
+					if subDescriptions[i] in description:
+						print(description)
+						x += 1
+						handCodeTypeNum = subDtypes[i] + types
+						p0 = (mles[handCodeTypeNum - 1][1] / (mles[handCodeTypeNum - 1][0] + mles[handCodeTypeNum - 1][1]))
+						p1 = (mles[handCodeTypeNum - 1][3] / (mles[handCodeTypeNum - 1][2] + mles[handCodeTypeNum - 1][3]))
+						pred0 = pred0 * p0
+						pred1 = pred1 * p1
 
 				# loop through rest of probabilities
 				for i in columns:
@@ -310,6 +343,7 @@ def nbcPred(columns, laws, file, mles):
 		correctO = correct0 + correct1
 		acc = correctO / testedO
 		acceptedPerc = accepted / testedO
+		print(x)
 		string = "Class 0: predicted " + str(tested0) + ", correctly classified " + str(correct0) +"\n"
 		string+= "Class 1: predicted " + str(tested1) + ", correctly classified " + str(correct1) +"\n"
 		string+= "Overall: predicted " + str(testedO) + ", correctly classified " + str(correctO) +"\n"
