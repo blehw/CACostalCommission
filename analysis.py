@@ -115,8 +115,8 @@ def nbcTrain(columns, laws, file):
 		reader = csv.reader(input)
 		next(reader)
 		for row in reader:
-			if row[11] != 'NA':
-				subDescriptions.append(row[11])
+			if row[12] != 'NA':
+				subDescriptions.append(row[12])
 				handCode = []
 				for i in range(2, 5):
 					handCode.append(row[i])
@@ -133,6 +133,15 @@ def nbcTrain(columns, laws, file):
 		outcomeColumn = 4
 		trainNum = 800
 		totalInstances = rows - trainNum
+
+		'''
+		northCentral = '-sf'
+		north = '-a'
+		central = '-sc'
+		south = '-lb'
+		sanDiego = '-sd'
+		southCentral = '-v'
+		'''
 
 		reader = csv.reader(input)
 		# number of values in each training instance
@@ -236,8 +245,8 @@ def nbcPred(columns, laws, file, mles):
 		reader = csv.reader(input)
 		next(reader)
 		for row in reader:
-			if row[11] != 'NA':
-				subDescriptions.append(row[11])
+			if row[12] != 'NA':
+				subDescriptions.append(row[12])
 				handCode = []
 				for i in range(2, 5):
 					handCode.append(row[i])
@@ -266,8 +275,6 @@ def nbcPred(columns, laws, file, mles):
 
 		accepted = 0
 
-		x = 0
-
 		for case in reader:
 			if reader.line_num <= trainNum:
 				# outcome variable is 0 if rejected, 1 if approved
@@ -294,7 +301,6 @@ def nbcPred(columns, laws, file, mles):
 				description = case[2]
 				for i in range(len(subDescriptions)):
 					if subDescriptions[i] in description:
-						print(description)
 						x += 1
 						handCodeTypeNum = subDtypes[i] + types
 						p0 = (mles[handCodeTypeNum - 1][1] / (mles[handCodeTypeNum - 1][0] + mles[handCodeTypeNum - 1][1]))
@@ -343,7 +349,6 @@ def nbcPred(columns, laws, file, mles):
 		correctO = correct0 + correct1
 		acc = correctO / testedO
 		acceptedPerc = accepted / testedO
-		print(x)
 		string = "Class 0: predicted " + str(tested0) + ", correctly classified " + str(correct0) +"\n"
 		string+= "Class 1: predicted " + str(tested1) + ", correctly classified " + str(correct1) +"\n"
 		string+= "Overall: predicted " + str(testedO) + ", correctly classified " + str(correctO) +"\n"

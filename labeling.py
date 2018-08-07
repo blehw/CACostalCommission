@@ -60,6 +60,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	unequal = True
 	while unequal:
+		print(centers)
 		oldClusters = deepcopy(clusters)
 		csvFile.seek(0)
 		for row in reader:
