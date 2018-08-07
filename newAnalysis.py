@@ -145,11 +145,10 @@ def nbcTrain(columns, laws, file):
 
 		reader = csv.reader(input)
 		# number of values in each training instance
-		inputs = len(laws) + types + handCodeTypes
 		next(reader)
 
 		# counts of true/false for column based on accepted/other
-		counts = [[0,0,0,0] for i in range(inputs)]
+		counts = [[[0,0,0,0] for i in range(len(laws))] for i in range(types)]
 
 		for case in reader:
 			if reader.line_num > trainNum:
@@ -160,82 +159,47 @@ def nbcTrain(columns, laws, file):
 					outcome = 1
 
 				# get the type
-				typeNum = int(case[typeColumn])
-				# assign type column to true based on outcome
-				if outcome == 0:
-					for i in range(types):
-						if i != typeNum - 1:
-							counts[i][0] += 1
-						else:
-							counts[i][1] += 1
-				else:
-					for i in range(types):
-						if i != typeNum - 1:
-							counts[i][2] += 1
-						else:
-							counts[i][3] += 1
-
-				# get the description
-				description = case[2]
-				for i in range(len(subDescriptions)):
-					if subDescriptions[i] in description:
-						#print(subDtypes[i])
-						#subDescriptions.remove(subDescriptions[i])
-						handCodeTypeNum = subDtypes[i]
-						if outcome == 0:
-							for j in range(handCodeTypes):
-								if j != handCodeTypeNum - 1:
-									counts[types + j][0] += 1
-								else:
-									counts[types + j][1] += 1
-						else:
-							for j in range(handCodeTypes):
-								if j != handCodeTypeNum - 1:
-									counts[types + j][2] += 1
-								else:
-									counts[types + j][3] += 1
+				typeNum = int(case[typeColumn]) - 1
 
 				# loop through bylaws, increment values based on outcome
-				num = types + handCodeTypes
 				for i in columns:
 					if outcome == 0:
 						if case[i] == '0':
-							counts[num][0] += 1
+							counts[typeNum][i - 8][0] += 1
 						else:
-							counts[num][1] += 1
+							counts[typeNum][i - 8][1] += 1
 					else:
 						if case[i] == '0':
-							counts[num][2] += 1
+							counts[typeNum][i - 8][2] += 1
 						else:
-							counts[num][3] += 1
-					num += 1
+							counts[typeNum][i - 8][3] += 1
 
 		# divide by total rows to get percentages, with laplace estimators
 		# if a value is 0, add 1 to it (so its not 'impossible')
-		mles = [[0,0,0,0] for i in range(inputs)]
-		for i in range(inputs):
-			table = counts[i]
+		mles = [[[0,0,0,0] for i in range(len(laws))] for i in range(types)]
+		for typeNum in range(types):
+			for i in range(len(laws)):
+				table = counts[typeNum][i]
 
-			if (table[0] != 0):
-				mles[i][0] = table[0] / (totalInstances - 1)
-			else:
-				mles[i][0] = (table[0] + 1) / (totalInstances+ 1)
+				if (table[0] != 0):
+					mles[typeNum][i][0] = table[0] / (totalInstances - 1)
+				else:
+					mles[typeNum][i][0] = (table[0] + 1) / (totalInstances+ 1)
 
-			if (table[1] != 0):
-				mles[i][1] = table[1] / (totalInstances - 1)
-			else:
-				mles[i][1] = (table[1] + 1) / (totalInstances + 1)
+				if (table[1] != 0):
+					mles[typeNum][i][1] = table[1] / (totalInstances - 1)
+				else:
+					mles[typeNum][i][1] = (table[1] + 1) / (totalInstances + 1)
 
-			if (table[2] != 0):
-				mles[i][2] = table[2] / (totalInstances - 1)
-			else:
-				mles[i][2] = (table[2] + 1) / (totalInstances + 1)
+				if (table[2] != 0):
+					mles[typeNum][i][2] = table[2] / (totalInstances - 1)
+				else:
+					mles[typeNum][i][2] = (table[2] + 1) / (totalInstances + 1)
 
-			if (table[3] != 0):
-				mles[i][3] = table[3] / (totalInstances - 1)
-			else:
-				mles[i][3] = (table[3] + 1) / (totalInstances + 1)
-
+				if (table[3] != 0):
+					mles[typeNum][i][3] = table[3] / (totalInstances - 1)
+				else:
+					mles[typeNum][i][3] = (table[3] + 1) / (totalInstances + 1)
 		return mles
 
 def nbcPred(columns, laws, file, mles):
@@ -283,44 +247,23 @@ def nbcPred(columns, laws, file, mles):
 				if 'APPROVED' in outcomeStr:
 					outcome = 1
 
-				num = types + handCodeTypes
 				pred0 = 1
 				pred1 = 1
 
-				typeNum = int(case[typeColumn])
-
-				# include this line to only test for type 1s
-				# if (typeNum == 1):
-
-				# probability for type
-				p0 = mles[typeNum - 1][1] / (mles[typeNum - 1][0] + mles[typeNum - 1][1])
-				p1 = mles[typeNum - 1][3] / (mles[typeNum - 1][2] + mles[typeNum - 1][3])
-
-				pred0 = pred0 * p0
-				pred1 = pred1 * p1
-
-				description = case[2]
-				for i in range(len(subDescriptions)):
-					if subDescriptions[i] in description:
-						handCodeTypeNum = subDtypes[i] + types
-						p0 = (mles[handCodeTypeNum - 1][1] / (mles[handCodeTypeNum - 1][0] + mles[handCodeTypeNum - 1][1]))
-						p1 = (mles[handCodeTypeNum - 1][3] / (mles[handCodeTypeNum - 1][2] + mles[handCodeTypeNum - 1][3]))
-						pred0 = pred0 * p0
-						pred1 = pred1 * p1
+				typeNum = int(case[typeColumn]) - 1
 
 				# loop through rest of probabilities
 				for i in columns:
 					if case[i] == '0':
-						p0 = mles[num][0] / (mles[num][0] + mles[num][1])
-						p1 = mles[num][2] / (mles[num][2] + mles[num][3])
+						p0 = (mles[typeNum][i - 8][0] + 1) / (mles[typeNum][i - 8][0] + mles[typeNum][i - 8][1] + 2)
+						p1 = (mles[typeNum][i - 8][2] + 1) / (mles[typeNum][i - 8][2] + mles[typeNum][i - 8][3] + 2)
 						pred0 = pred0 * p0
 						pred1 = pred1 * p1
 					else:
-						p0 = mles[num][1] / (mles[num][0] + mles[num][1])
-						p1 = mles[num][3] / (mles[num][2] + mles[num][3])
+						p0 = (mles[typeNum][i - 8][1] + 1) / (mles[typeNum][i - 8][0] + mles[typeNum][i - 8][1] + 2)
+						p1 = (mles[typeNum][i - 8][3] + 1) / (mles[typeNum][i - 8][2] + mles[typeNum][i - 8][3] + 2)
 						pred0 = pred0 * p0
 						pred1 = pred1 * p1
-					num+=1
 
 				# test if our prediction is correct
 				if (pred0 > pred1):
