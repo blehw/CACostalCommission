@@ -6,6 +6,7 @@ import nltk # $ pip install nltk
 from nltk.corpus import stopwords
 from copy import deepcopy
 import math
+from scipy import linalg, dot
 
 csv.field_size_limit(sys.maxsize)
 stopwords = stopwords.words('english')
@@ -65,6 +66,8 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	csvFile.seek(0)
 	reader = csv.reader(csvFile)
 
+	matrixList = []
+
 	for row in reader:
 		if (reader.line_num < 1000):
 			tfidfList = [0 for i in range(len(popularWords))]
@@ -74,8 +77,18 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 					tfList[popularWords.index(word)] += 1
 			for i in range(len(tfList)):
 				tfidfList[i] = tfList[i] * idfList[i]
-			print(tfidfList)
+			matrixList.append(tfidfList)
+	
+	matrix = numpy.array(matrixList)
+	print(matrix)
 
+	u,sigma,vt = linalg.svd(matrix)
+
+	newSigma = linalg.norm(sigma)
+
+	transformedMatrix = dot(dot(u, linalg.diagsvd(newSigma, len(matrix), len(vt))) ,vt)
+
+	print(transformedMatrix)
 
 
 
