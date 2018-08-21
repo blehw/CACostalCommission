@@ -1,59 +1,20 @@
 import csv
 import sys
-import random
 import numpy
 import nltk # $ pip install nltk
 from nltk.corpus import stopwords
-from copy import deepcopy
 import math
 from scipy import linalg, dot, spatial
 
 numpy.set_printoptions(threshold=numpy.nan)
 
-csv.field_size_limit(sys.maxsize)
-stopwords = stopwords.words('english')
-
-inputFile = 'all_data_w_paragraphs_public_access.csv'
-
-# since the file is so large, this indicates how many lines we want to read
-lineNum = 100
-d = {}
-badWords = []
+lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
 
+inputFile = 'all_data_w_paragraphs_public_access.csv'
+
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
-	reader = csv.reader(csvFile)
-
-	'''
-	for row in reader:
-		if (reader.line_num < lineNum):
-			tokens = nltk.word_tokenize(row[documentColNum])
-			tagged = nltk.pos_tag(tokens)
-			for tag in tagged:
-				# if we find a pronoun, add it to the list of words that we don't want
-				if (tag[1].startswith('NNP')):
-					badWords.append(tag[0])
-					# and erase all previous entries in our dictionary of that word
-					if (tag[0] in d):
-						d[tag[0]] = 0
-				# add word to our dictionary
-				elif (tag[1].startswith('V') or tag[1] == 'NN' or tag[1] == 'NNS') and (tag[0] not in stopwords) and ('.' not in tag[0]) and (tag[0] != '[' and tag[0] != ']') and (tag[0] not in badWords):
-					if tag[0] in d:
-						d[tag[0]] += 1
-					else:
-						d[tag[0]] = 1
-
-	popularWords = sorted(d, key=d.get, reverse=True)
-	wordFile = open('lsa_popular_words.txt', 'w')
-	for i in range(len(popularWords)):
-		wordFile.write('%s\n' % popularWords[i])
-	#print(popularWords)
-	#wordFrequencies = sorted(d.values(), reverse=True)
-	#print(wordFrequencies)
-	'''
-
-	csvFile.seek(0)
 	reader = csv.reader(csvFile)
 
 	with open('lsa_popular_words.txt') as f:
@@ -101,13 +62,13 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	# rotate the matrix so that it is words down and documents across
 	rotatedMatrix = [*zip(*matrix)]
 	# print(len(rotatedMatrix))
-	print(rotatedMatrix)
+	# print(rotatedMatrix)
 
 	# math stuff
 	u,sigma,vt = linalg.svd(rotatedMatrix)
 
 	dimensionsToReduce = linalg.norm(sigma)
-	print(dimensionsToReduce)
+	# print(dimensionsToReduce)
 
 	rows = len(sigma)
 
@@ -124,7 +85,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	# m_nonzero_rows = m[[i for i, x in enumerate(m) if x.any()]]
 	# print(transformedMatrix)
 
-	string = 'ice'
+	string = 'environment'
 	dists = []
 	for row in transformedMatrix:
 		dists.append(spatial.distance.cosine(transformedMatrix[popularWords.index(string)], row))
