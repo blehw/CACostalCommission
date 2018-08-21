@@ -7,6 +7,7 @@ from nltk.corpus import stopwords
 from copy import deepcopy
 import math
 from scipy import linalg, dot
+from sklearn.decomposition import TruncatedSVD
 
 csv.field_size_limit(sys.maxsize)
 stopwords = stopwords.words('english')
@@ -84,9 +85,12 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	u,sigma,vt = linalg.svd(matrix)
 
-	newSigma = linalg.norm(sigma)
+	dimensionsToReduce = linalg.norm(sigma)
 
-	transformedMatrix = dot(dot(u, linalg.diagsvd(newSigma, len(matrix), len(vt))) ,vt)
+	smallerSigma = TruncatedSVD(len(popularWords) - dimensionsToReduce)
+	print(smallerSigma)
+
+	transformedMatrix = dot(dot(u, linalg.diagsvd(smallerSigma, len(matrix), len(vt))) ,vt)
 
 	print(transformedMatrix)
 
