@@ -6,34 +6,38 @@ import nltk # $ pip install nltk
 from nltk.corpus import stopwords
 from copy import deepcopy
 import math
-from scipy import linalg, dot
-from sklearn.decomposition import TruncatedSVD
+from scipy import linalg, dot, spatial
+
+numpy.set_printoptions(threshold=numpy.nan)
 
 csv.field_size_limit(sys.maxsize)
 stopwords = stopwords.words('english')
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-numPopularWords = 500
+# since the file is so large, this indicates how many lines we want to read
 lineNum = 100
 d = {}
 badWords = []
+# this is the column that the text is in
+documentColNum = 0
+
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	reader = csv.reader(csvFile)
-
-	# magic numbers
-	documentRowNum = 0
 
 	'''
 	for row in reader:
 		if (reader.line_num < lineNum):
-			tokens = nltk.word_tokenize(row[documentRowNum])
+			tokens = nltk.word_tokenize(row[documentColNum])
 			tagged = nltk.pos_tag(tokens)
 			for tag in tagged:
+				# if we find a pronoun, add it to the list of words that we don't want
 				if (tag[1].startswith('NNP')):
 					badWords.append(tag[0])
+					# and erase all previous entries in our dictionary of that word
 					if (tag[0] in d):
 						d[tag[0]] = 0
+				# add word to our dictionary
 				elif (tag[1].startswith('V') or tag[1] == 'NN' or tag[1] == 'NNS') and (tag[0] not in stopwords) and ('.' not in tag[0]) and (tag[0] != '[' and tag[0] != ']') and (tag[0] not in badWords):
 					if tag[0] in d:
 						d[tag[0]] += 1
@@ -54,20 +58,23 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	with open('lsa_popular_words.txt') as f:
 		popularWords = f.read().splitlines()
-	#print(popularWords)
+	#print(len(popularWords))
 
+	# our list containing inverse document frequency values
 	idfList = [0 for i in range(len(popularWords))]
 
 	for row in reader:
 		if reader.line_num < lineNum:
+			# if an entry of text contains a certain word, increment that value in our list by 1
 			for i in range(len(popularWords)):
-				if popularWords[i] in row[documentRowNum]:
+				if popularWords[i] in row[documentColNum]:
 					idfList[i] += 1
-
 	for i in range(len(idfList)):
+		# do math stuff
 		idf = math.log((lineNum / idfList[i]))
 		idfList[i] = idf
-		print(popularWords[i] + " " + str(idf))
+		# this is the weiging value for each term
+		#print(popularWords[i] + " " + str(idf))
 
 	csvFile.seek(0)
 	reader = csv.reader(csvFile)
@@ -78,9 +85,12 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		if (reader.line_num < lineNum):
 			tfidfList = [0 for i in range(len(popularWords))]
 			tfList = [0 for i in range(len(popularWords))]
-			for word in row[documentRowNum]:
-				if word in popularWords:
-					tfList[popularWords.index(word)] += 1
+			# count number of times each word appears in each line
+			for word in row[documentColNum].split():
+				for popWord in popularWords:
+					if word == popWord:
+						tfList[popularWords.index(word)] += 1
+			# multiply the term frequenc by the appropriate weighing
 			for i in range(len(tfList)):
 				tfidfList[i] = tfList[i] * idfList[i]
 			matrixList.append(tfidfList)
@@ -88,9 +98,12 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	matrix = numpy.array(matrixList)
 	#print(matrix)
 
+	# rotate the matrix so that it is words down and documents across
 	rotatedMatrix = [*zip(*matrix)]
-	#print(rotatedMatrix)
+	# print(len(rotatedMatrix))
+	print(rotatedMatrix)
 
+	# math stuff
 	u,sigma,vt = linalg.svd(rotatedMatrix)
 
 	dimensionsToReduce = linalg.norm(sigma)
@@ -98,15 +111,30 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	rows = len(sigma)
 
-	for index in range(rows - int(dimensionsToReduce), rows):
-		sigma[index] = 0
+	# eliminate unimportant dimensions
+	if dimensionsToReduce < rows:
+		for index in range(rows - int(dimensionsToReduce), rows):
+			sigma[index] = 0
 
+	# reconstruct matrix
 	transformedMatrix = dot(dot(u, linalg.diagsvd(sigma, len(rotatedMatrix), len(vt))) ,vt)
+	#print(transformedMatrix)
 
-	print(transformedMatrix)
+	# this matrix has words down and documents across, showing weighted values for each
+	# m_nonzero_rows = m[[i for i, x in enumerate(m) if x.any()]]
+	# print(transformedMatrix)
 
-	#print(docFreqCounts)
-	#print(len(popularWords))
-
-
+	string = 'ice'
+	dists = []
+	for row in transformedMatrix:
+		dists.append(spatial.distance.cosine(transformedMatrix[popularWords.index(string)], row))
+	'''
+	print(dists)
+	print(len(transformedMatrix))
+	print(len(popularWords))
+	print(len(dists))
+	'''
+	print('Words most related to ' + string + ':')
+	for n in sorted(dists)[:10]:
+		print(popularWords[dists.index(n)])
 
