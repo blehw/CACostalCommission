@@ -3,8 +3,8 @@ from scipy import linalg, dot, spatial
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-# with open(inputFile, encoding='ISO-8859-1') as csvFile:
-#     rowCount = sum(1 for row in csvFile)
+with open(inputFile, encoding='ISO-8859-1') as csvFile:
+     rowCount = sum(1 for row in csvFile)
 
 lineNum = 1000
 startYear = 1996
@@ -30,7 +30,7 @@ for n in range(startYear, endYear + 1, 5):
 
 	for i in range(len(popularWords)):
 		row = []
-		for j in range(i * (lineNum - 1), (i * (lineNum - 1)) + lineNum - 1):
+		for j in range(i * (rowCount - 1), (i * (rowCount - 1)) + rowCount - 1):
 			row.append(matrixNums[j])
 		matrixList.append(row)
 
