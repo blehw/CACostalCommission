@@ -6,7 +6,7 @@ from scipy import linalg, dot
 
 numpy.set_printoptions(threshold=numpy.nan)
 
-lineNum = 1000
+lineNum = 1000 # total num of docs?
 # this is the column that the text is in
 documentColNum = 0
 
@@ -34,7 +34,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	for i in range(len(idfList)):
 		# do math stuff
-		idf = math.log((lineNum / idfList[i]))
+		idf = math.log((lineNum / idfList[i])) # log of (total num docs / num docs with that term)?
 		idfList[i] = idf
 		# this is the weiging value for each term
 		#print(popularWords[i] + " " + str(idf))
@@ -42,7 +42,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	csvFile.seek(0)
 	reader = csv.reader(csvFile)
 
-	matrixList = []
+	matrixList = [] # matrix holding tf-idf values, rows->words and cols->docs
 
 	for row in reader:
 		if (reader.line_num < lineNum):
@@ -53,7 +53,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 				for popWord in popularWords:
 					if word == popWord:
 						tfList[popularWords.index(word)] += 1
-			# multiply the term frequenc by the appropriate weighing
+			# multiply the term frequency by the appropriate weighing
 			for i in range(len(tfList)):
 				tfidfList[i] = tfList[i] * idfList[i]
 			matrixList.append(tfidfList)
@@ -61,7 +61,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	matrix = numpy.array(matrixList)
 	#print(matrix)
 
-<<<<<<< HEAD
 	# Singular Value Decomposition (SVD)
 
 	u,sigma,vt = linalg.svd(matrix)
@@ -74,7 +73,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	print(smallerSigma)
 
 	transformedMatrix = dot(dot(u, linalg.diagsvd(smallerSigma, len(matrix), len(vt))) ,vt)
-=======
+
 	# rotate the matrix so that it is words down and documents across
 	rotatedMatrix = [*zip(*matrix)]
 	# print(len(rotatedMatrix))
@@ -82,7 +81,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 	# math stuff
 	u,sigma,vt = linalg.svd(rotatedMatrix)
->>>>>>> ac113d7ebf41f6cee51d6a79e67ca29310cfa6d8
 
 	dimensionsToReduce = linalg.norm(sigma)
 	# print(dimensionsToReduce)
@@ -103,6 +101,12 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	# print(transformedMatrix)
 
 	transformedMatrix = transformedMatrix.tolist()
+
+	### COSINE SIMILARITY:
+	### similarity(w1, w2)
+	### = cos(w1, w2)
+	### = (w1 * w2) / (||w1|| * ||w2||)
+	### = (w1 * w2) / (sqrt(sum of all doc counts of w1 squared) * sqrt(sum of all doc counts of w2 squarred))
 
 	with open('lsaMatrix.txt','w') as f:
 		for row in transformedMatrix:
