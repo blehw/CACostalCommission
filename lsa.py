@@ -10,8 +10,7 @@ lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
 startYear = 1996
-endYear = 2016
-currYear = 2016
+endYear = 2011
 yearColNum = 2
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
@@ -23,17 +22,17 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
-	for n in range(endYear, endYear + 1, 5):
-
-		reader = csv.reader(csvFile)
+	for n in range(startYear, endYear + 1, 5):
 
 		print(n)
+
+		reader = csv.reader(csvFile)
 
 		fileName = 'lsa_popular_words_' + str(n) + '.txt'
 
 		with open(fileName) as f:
 			popularWords = f.read().splitlines()
-		#print(len(popularWords))
+		print(len(popularWords))
 
 		# our list containing inverse document frequency values
 		idfList = [0 for i in range(len(popularWords))]
@@ -47,7 +46,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 					if popularWords[i] in row[documentColNum]:
 						idfList[i] += 1
 				numDocs += 1
-				print(numDocs)
 
 		for i in range(len(idfList)):
 			# do math stuff
@@ -92,6 +90,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 		# eliminate unimportant dimensions
 		if dimensionsToReduce < rows:
+			print('Reducing dimensions')
 			for index in range(rows - int(dimensionsToReduce), rows):
 				sigma[index] = 0
 
@@ -107,9 +106,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 		outFile = 'lsa_matrix_' + str(n) + '.txt'
 
-		'''
 		with open(outFile,'w') as o:
 			for row in transformedMatrix:
 				for column in row:
 					o.write('%s\n' % str(column))
-		'''

@@ -6,11 +6,10 @@ inputFile = 'all_data_w_paragraphs_public_access.csv'
 
 lineNum = 1000
 startYear = 1996
-endYear = 2016
-currYear = 2016
+endYear = 2011
 yearColNum = 2
 
-for n in range(endYear, endYear + 1, 5):
+for n in range(startYear, endYear + 1, 5):
 
 	with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		reader = csv.reader(csvFile)
@@ -36,7 +35,7 @@ for n in range(endYear, endYear + 1, 5):
 
 	for i in range(len(popularWords)):
 		row = []
-		for j in range(i * (numDocs - 1), (i * (numDocs - 1)) + numDocs - 1):
+		for j in range(i * numDocs, (i * numDocs) + numDocs):
 			row.append(matrixNums[j])
 		matrixList.append(row)
 
@@ -51,10 +50,12 @@ for n in range(endYear, endYear + 1, 5):
 		else:
 			dists.append(1)
 
+	relatedWords = []
+
+	for x in sorted(dists):
+		relatedWords.append(popularWords[dists.index(x)])
+
+	relatedWords.remove(string)
 	print('Words most related to ' + string + ' in ' + str(n) + ':')
-	for n in sorted(dists)[:10]:
-		print(popularWords[dists.index(n)])
-
-	ice = popularWords.index('winter')
-	print(dists[ice])
-
+	for word in relatedWords[:20]:
+		print(word)
