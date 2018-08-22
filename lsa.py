@@ -6,14 +6,14 @@ from scipy import linalg, dot
 
 numpy.set_printoptions(threshold=numpy.nan)
 
-# lineNum = 10
+lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-with open(inputFile, encoding='ISO-8859-1') as csvFile:
-    rowCount = sum(1 for row in csvFile)
+# with open(inputFile, encoding='ISO-8859-1') as csvFile:
+#     rowCount = sum(1 for row in csvFile)
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	reader = csv.reader(csvFile)
@@ -26,14 +26,15 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	idfList = [0 for i in range(len(popularWords))]
 
 	for row in reader:
-		#if reader.line_num < lineNum:
+		if reader.line_num < lineNum:
 		# if an entry of text contains a certain word, increment that value in our list by 1
-		for i in range(len(popularWords)):
-			if popularWords[i] in row[documentColNum]:
-				idfList[i] += 1
+			for i in range(len(popularWords)):
+				if popularWords[i] in row[documentColNum]:
+					idfList[i] += 1
+
 	for i in range(len(idfList)):
 		# do math stuff
-		idf = math.log((rowCount / idfList[i]))
+		idf = math.log((lineNum / idfList[i]))
 		idfList[i] = idf
 		# this is the weiging value for each term
 		#print(popularWords[i] + " " + str(idf))
@@ -44,18 +45,18 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	matrixList = []
 
 	for row in reader:
-		#if (reader.line_num < lineNum):
-		tfidfList = [0 for i in range(len(popularWords))]
-		tfList = [0 for i in range(len(popularWords))]
-		# count number of times each word appears in each line
-		for word in row[documentColNum].split():
-			for popWord in popularWords:
-				if word == popWord:
-					tfList[popularWords.index(word)] += 1
-		# multiply the term frequenc by the appropriate weighing
-		for i in range(len(tfList)):
-			tfidfList[i] = tfList[i] * idfList[i]
-		matrixList.append(tfidfList)
+		if (reader.line_num < lineNum):
+			tfidfList = [0 for i in range(len(popularWords))]
+			tfList = [0 for i in range(len(popularWords))]
+			# count number of times each word appears in each line
+			for word in row[documentColNum].split():
+				for popWord in popularWords:
+					if word == popWord:
+						tfList[popularWords.index(word)] += 1
+			# multiply the term frequenc by the appropriate weighing
+			for i in range(len(tfList)):
+				tfidfList[i] = tfList[i] * idfList[i]
+			matrixList.append(tfidfList)
 	
 	matrix = numpy.array(matrixList)
 	#print(matrix)
