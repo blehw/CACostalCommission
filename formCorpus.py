@@ -13,12 +13,17 @@ lineNum = 1000
 d = {}
 badWords = []
 documentColNum = 0
+startYear = 1996
+endYear = 2016
+currYear = 2016
+yearColNum = 2
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	reader = csv.reader(csvFile)
 
 	for row in reader:
-		if (reader.line_num < lineNum):
+		# if (reader.line_num < lineNum):
+		if row[yearColNum] == str(currYear):
 			tokens = nltk.word_tokenize(row[documentColNum])
 			tagged = nltk.pos_tag(tokens)
 			for tag in tagged:
@@ -34,11 +39,17 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 						d[tag[0]] += 1
 					else:
 						d[tag[0]] = 1
+		elif row[yearColNum] == str(currYear - 1):
+			popularWords = sorted(d, key=d.get, reverse=True)
+			fileName = 'lsa_popular_words_' + str(currYear) + '.txt'
+			wordFile = open(fileName, 'w')
+			for i in range(len(popularWords)):
+				wordFile.write('%s\n' % popularWords[i])
+			currYear = currYear - 5
+			print(currYear)
 
 	popularWords = sorted(d, key=d.get, reverse=True)
-	wordFile = open('lsa_popular_words.txt', 'w')
+	fileName = 'lsa_popular_words_' + str(currYear) + '.txt'
+	wordFile = open(fileName, 'w')
 	for i in range(len(popularWords)):
 		wordFile.write('%s\n' % popularWords[i])
-	#print(popularWords)
-	#wordFrequencies = sorted(d.values(), reverse=True)
-	#print(wordFrequencies)

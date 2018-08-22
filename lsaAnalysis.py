@@ -7,33 +7,42 @@ inputFile = 'all_data_w_paragraphs_public_access.csv'
 #     rowCount = sum(1 for row in csvFile)
 
 lineNum = 1000
+startYear = 1996
+endYear = 2016
+currYear = 2016
 
-with open('lsaMatrix.txt') as f:
-	matrixNums = f.read().splitlines()
+for n in range(startYear, endYear + 1, 5):
 
-with open('lsa_popular_words.txt') as f:
-		popularWords = f.read().splitlines()
+	matrixFile = 'lsa_matrix_' + str(n) + '.txt'
 
-matrixNums = [float(i) for i in matrixNums]
-matrixList = []
+	with open(matrixFile) as f:
+		matrixNums = f.read().splitlines()
 
-print(len(popularWords))
+	wordsFile = 'lsa_popular_words_' + str(n) + '.txt'
 
-for i in range(len(popularWords)):
-	row = []
-	for j in range(i * (lineNum - 1), (i * (lineNum - 1)) + lineNum - 1):
-		row.append(matrixNums[j])
-	matrixList.append(row)
+	with open(wordsFile) as f:
+			popularWords = f.read().splitlines()
 
-matrix = numpy.array(matrixList)
+	matrixNums = [float(i) for i in matrixNums]
+	matrixList = []
 
-string = 'flooding'
-dists = []
-for row in matrix:
-	dists.append(spatial.distance.cosine(matrix[popularWords.index(string)], row))
+	print(len(popularWords))
 
-print('Words most related to ' + string + ':')
-for n in sorted(dists)[:10]:
-	print(popularWords[dists.index(n)])
+	for i in range(len(popularWords)):
+		row = []
+		for j in range(i * (lineNum - 1), (i * (lineNum - 1)) + lineNum - 1):
+			row.append(matrixNums[j])
+		matrixList.append(row)
+
+	matrix = numpy.array(matrixList)
+
+	string = 'wall'
+	dists = []
+	for row in matrix:
+		dists.append(spatial.distance.cosine(matrix[popularWords.index(string)], row))
+
+	print('Words most related to ' + string + ' in ' + str(n) + ':')
+	for n in sorted(dists).remove(string)[:10]:
+		print(popularWords[dists.index(n)])
 
 
