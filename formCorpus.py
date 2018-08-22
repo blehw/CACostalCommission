@@ -45,8 +45,10 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			wordFile = open(fileName, 'w')
 			for i in range(len(popularWords)):
 				wordFile.write('%s\n' % popularWords[i])
-			currYear = currYear - 5
-			print(currYear)
+			d = {}
+			badWords = []
+			# currYear = currYear - 5
+			# print(currYear)
 
 	popularWords = sorted(d, key=d.get, reverse=True)
 	fileName = 'lsa_popular_words_' + str(currYear) + '.txt'
