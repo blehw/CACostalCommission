@@ -83,7 +83,11 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	matrix = numpy.array(matrixList)
 	print(matrix)
 
+	# Singular Value Decomposition (SVD)
+
 	u,sigma,vt = linalg.svd(matrix)
+
+	# Reduce the dimensions of sigma
 
 	dimensionsToReduce = linalg.norm(sigma)
 
