@@ -108,6 +108,8 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 	### = (w1 * w2) / (||w1|| * ||w2||)
 	### = (w1 * w2) / (sqrt(sum of all doc counts of w1 squared) * sqrt(sum of all doc counts of w2 squarred))
 
+	# Create cosine similarity matrix with all words on x and y axes, containing similarities between all words
+
 	with open('lsaMatrix.txt','w') as f:
 		for row in transformedMatrix:
 			for column in row:
