@@ -12,16 +12,22 @@ documentColNum = 0
 startYear = 1996
 endYear = 2016
 currYear = 2016
+yearColNum = 2
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
+'''
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
      rowCount = sum(1 for row in csvFile)
+'''
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
-	reader = csv.reader(csvFile)
 
-	for n in range(startYear, endYear + 1, 5):
+	for n in range(endYear, endYear + 1, 5):
+
+		reader = csv.reader(csvFile)
+
+		print(n)
 
 		fileName = 'lsa_popular_words_' + str(n) + '.txt'
 
@@ -32,16 +38,20 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		# our list containing inverse document frequency values
 		idfList = [0 for i in range(len(popularWords))]
 
+		numDocs = 0
+
 		for row in reader:
-			if reader.line_num < rowCount:
+			if row[yearColNum] == str(n):
 			# if an entry of text contains a certain word, increment that value in our list by 1
 				for i in range(len(popularWords)):
 					if popularWords[i] in row[documentColNum]:
 						idfList[i] += 1
+				numDocs += 1
+				print(numDocs)
 
 		for i in range(len(idfList)):
 			# do math stuff
-			idf = math.log((rowCount / idfList[i]))
+			idf = math.log((numDocs / idfList[i]))
 			idfList[i] = idf
 			# this is the weiging value for each term
 			#print(popularWords[i] + " " + str(idf))
@@ -52,7 +62,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		matrixList = []
 
 		for row in reader:
-			if (reader.line_num < rowCount):
+			if row[yearColNum] == str(n):
 				tfidfList = [0 for i in range(len(popularWords))]
 				tfList = [0 for i in range(len(popularWords))]
 				# count number of times each word appears in each line
@@ -66,7 +76,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 				matrixList.append(tfidfList)
 		
 		matrix = numpy.array(matrixList)
-		#print(matrix)
 
 		# rotate the matrix so that it is words down and documents across
 		rotatedMatrix = [*zip(*matrix)]
@@ -98,7 +107,9 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 		outFile = 'lsa_matrix_' + str(n) + '.txt'
 
+		'''
 		with open(outFile,'w') as o:
 			for row in transformedMatrix:
 				for column in row:
 					o.write('%s\n' % str(column))
+		'''

@@ -1,17 +1,25 @@
+import csv
 import numpy
 from scipy import linalg, dot, spatial
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-with open(inputFile, encoding='ISO-8859-1') as csvFile:
-     rowCount = sum(1 for row in csvFile)
-
 lineNum = 1000
 startYear = 1996
 endYear = 2016
 currYear = 2016
+yearColNum = 2
 
-for n in range(startYear, endYear + 1, 5):
+for n in range(endYear, endYear + 1, 5):
+
+	with open(inputFile, encoding='ISO-8859-1') as csvFile:
+		reader = csv.reader(csvFile)
+		numDocs = 0
+		for row in reader:
+			if row[yearColNum] == str(n):
+				numDocs += 1
+
+	print(n)
 
 	matrixFile = 'lsa_matrix_' + str(n) + '.txt'
 
@@ -26,23 +34,27 @@ for n in range(startYear, endYear + 1, 5):
 	matrixNums = [float(i) for i in matrixNums]
 	matrixList = []
 
-	print(len(popularWords))
-
 	for i in range(len(popularWords)):
 		row = []
-		for j in range(i * (rowCount - 1), (i * (rowCount - 1)) + rowCount - 1):
+		for j in range(i * (numDocs - 1), (i * (numDocs - 1)) + numDocs - 1):
 			row.append(matrixNums[j])
 		matrixList.append(row)
 
 	matrix = numpy.array(matrixList)
 
-	string = 'wall'
+	string = 'winter'
 	dists = []
 	for row in matrix:
-		dists.append(spatial.distance.cosine(matrix[popularWords.index(string)], row))
+		not_zeros = row.any()
+		if not_zeros:
+			dists.append(spatial.distance.cosine(matrix[popularWords.index(string)], row))
+		else:
+			dists.append(1)
 
 	print('Words most related to ' + string + ' in ' + str(n) + ':')
-	for n in sorted(dists).remove(string)[:10]:
+	for n in sorted(dists)[:10]:
 		print(popularWords[dists.index(n)])
 
+	ice = popularWords.index('winter')
+	print(dists[ice])
 
