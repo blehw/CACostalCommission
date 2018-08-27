@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
 lineNum = 1000
-startYear = 1996
+startYear = 2001
 endYear = 2016
 yearColNum = 2
 
@@ -19,12 +19,12 @@ for n in range(startYear, endYear + 1, 5):
 		popularWords = f.read().splitlines()
 	allPopularWords.append(popularWords)
 
-doneYears = [1996, 2001, 2006, 2011, 2016]
+doneYears = [2001, 2006, 2011, 2016]
 volatilities = []
 
 for n in range(startYear, endYear + 1, 5):
 
-	#print(n)
+	print(n)
 
 	with open(inputFile, encoding='ISO-8859-1') as csvFile:
 		reader = csv.reader(csvFile)
@@ -40,10 +40,10 @@ for n in range(startYear, endYear + 1, 5):
 	
 	popularWords = allPopularWords[index]
 
-	string = 'fire'
+	string = 'seawall'
 
 	if string not in popularWords:
-		volatilities.append(1)
+		volatilities.append(0)
 	else:
 		matrixNums = [float(i) for i in matrixNums]
 		matrixList = []
@@ -99,7 +99,8 @@ for n in range(startYear, endYear + 1, 5):
 
 		volatilities.append(numpy.mean(coVariations))
 
-		index += 1
+	index += 1
 
 plt.plot(doneYears, volatilities)
+#plt.yticks(np.arange(min(volatilities), max(volatilities)+0.1, 0.1))
 plt.show()

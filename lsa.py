@@ -4,19 +4,19 @@ import numpy
 import math
 from scipy import linalg, dot
 import string
+import nltk # $ pip install nltk
+from nltk.corpus import stopwords
 
 numpy.set_printoptions(threshold=numpy.nan)
 
 lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
-startYear = 1996
+startYear = 1998
 endYear = 2016
 yearColNum = 2
 
 doneYears = [2001, 2011]
-
-table = str.maketrans({key: None for key in string.punctuation})
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
@@ -46,16 +46,35 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 			# our list containing inverse document frequency values
 			idfList = [0 for i in range(len(popularWords))]
+			tfs = []
 
 			numDocs = 0
+			pop = popularWords.copy()
 
 			for row in reader:
 				if row[yearColNum] == str(n):
+					usedWords = []
+					tfList = [0 for i in range(len(popularWords))]
 				# if an entry of text contains a certain word, increment that value in our list by 1
-					for i in range(len(popularWords)):
-						if popularWords[i] in row[documentColNum].translate(table):
+					#for i in range(len(popularWords)):
+					tokens = nltk.word_tokenize(row[documentColNum])
+					tagged = nltk.pos_tag(tokens)
+					for tag in tagged:
+						word = tag[0].lower()
+						if word in popularWords:
+							tfList[popularWords.index(word)] += 1
+							if word not in usedWords:
+								idfList[popularWords.index(word)] += 1
+								usedWords.append(word)
+							if word in pop:
+								pop.remove(word)
+						
+						'''
+						if popularWords[i] in row[documentColNum].lower():
 							idfList[i] += 1
+						'''
 					numDocs += 1
+					tfs.append(tfList)
 
 			for i in range(len(idfList)):
 				# do math stuff
@@ -69,6 +88,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 			matrixList = []
 
+			'''
 			for row in reader:
 				if row[yearColNum] == str(n):
 					tfidfList = [0 for i in range(len(popularWords))]
@@ -78,10 +98,13 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 						for popWord in popularWords:
 							if word == popWord:
 								tfList[popularWords.index(word)] += 1
+					'''
 					# multiply the term frequenc by the appropriate weighing
-					for i in range(len(tfList)):
-						tfidfList[i] = tfList[i] * idfList[i]
-					matrixList.append(tfidfList)
+			for tfList in tfs:
+				tfidfList = [0 for i in range(len(popularWords))]
+				for i in range(len(tfList)):
+					tfidfList[i] = tfList[i] * idfList[i]
+				matrixList.append(tfidfList)
 			
 			matrix = numpy.array(matrixList)
 
