@@ -3,6 +3,7 @@ import sys
 import numpy
 import math
 from scipy import linalg, dot
+import string
 
 numpy.set_printoptions(threshold=numpy.nan)
 
@@ -10,8 +11,12 @@ lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
 startYear = 1996
-endYear = 2011
+endYear = 2016
 yearColNum = 2
+
+doneYears = [2001, 2011]
+
+table = str.maketrans({key: None for key in string.punctuation})
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
@@ -22,91 +27,100 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
-	for n in range(startYear, endYear + 1, 5):
+	for n in range(startYear, endYear + 1, 2):
 
-		print(n)
+		if n not in doneYears:
 
-		reader = csv.reader(csvFile)
+			print(n)
 
-		fileName = 'lsa_popular_words_' + str(n) + '.txt'
+			csvFile.seek(0)
+			reader = csv.reader(csvFile)
 
-		with open(fileName) as f:
-			popularWords = f.read().splitlines()
-		print(len(popularWords))
+			fileName = 'lsa_popular_words_' + str(n) + '.txt'
 
-		# our list containing inverse document frequency values
-		idfList = [0 for i in range(len(popularWords))]
+			with open(fileName) as f:
+				popularWords = f.read().splitlines()
+			print(len(popularWords))
 
-		numDocs = 0
+			print('Constructing tf-idf matrix')
 
-		for row in reader:
-			if row[yearColNum] == str(n):
-			# if an entry of text contains a certain word, increment that value in our list by 1
-				for i in range(len(popularWords)):
-					if popularWords[i] in row[documentColNum]:
-						idfList[i] += 1
-				numDocs += 1
+			# our list containing inverse document frequency values
+			idfList = [0 for i in range(len(popularWords))]
 
-		for i in range(len(idfList)):
-			# do math stuff
-			idf = math.log((numDocs / idfList[i]))
-			idfList[i] = idf
-			# this is the weiging value for each term
-			#print(popularWords[i] + " " + str(idf))
+			numDocs = 0
 
-		csvFile.seek(0)
-		reader = csv.reader(csvFile)
+			for row in reader:
+				if row[yearColNum] == str(n):
+				# if an entry of text contains a certain word, increment that value in our list by 1
+					for i in range(len(popularWords)):
+						if popularWords[i] in row[documentColNum].translate(table):
+							idfList[i] += 1
+					numDocs += 1
 
-		matrixList = []
+			for i in range(len(idfList)):
+				# do math stuff
+				idf = math.log((numDocs / idfList[i]))
+				idfList[i] = idf
+				# this is the weiging value for each term
+				#print(popularWords[i] + " " + str(idf))
 
-		for row in reader:
-			if row[yearColNum] == str(n):
-				tfidfList = [0 for i in range(len(popularWords))]
-				tfList = [0 for i in range(len(popularWords))]
-				# count number of times each word appears in each line
-				for word in row[documentColNum].split():
-					for popWord in popularWords:
-						if word == popWord:
-							tfList[popularWords.index(word)] += 1
-				# multiply the term frequenc by the appropriate weighing
-				for i in range(len(tfList)):
-					tfidfList[i] = tfList[i] * idfList[i]
-				matrixList.append(tfidfList)
-		
-		matrix = numpy.array(matrixList)
+			csvFile.seek(0)
+			reader = csv.reader(csvFile)
 
-		# rotate the matrix so that it is words down and documents across
-		rotatedMatrix = [*zip(*matrix)]
-		# print(len(rotatedMatrix))
-		# print(rotatedMatrix)
+			matrixList = []
 
-		# math stuff
-		u,sigma,vt = linalg.svd(rotatedMatrix)
+			for row in reader:
+				if row[yearColNum] == str(n):
+					tfidfList = [0 for i in range(len(popularWords))]
+					tfList = [0 for i in range(len(popularWords))]
+					# count number of times each word appears in each line
+					for word in row[documentColNum].split():
+						for popWord in popularWords:
+							if word == popWord:
+								tfList[popularWords.index(word)] += 1
+					# multiply the term frequenc by the appropriate weighing
+					for i in range(len(tfList)):
+						tfidfList[i] = tfList[i] * idfList[i]
+					matrixList.append(tfidfList)
+			
+			matrix = numpy.array(matrixList)
 
-		dimensionsToReduce = linalg.norm(sigma)
-		# print(dimensionsToReduce)
+			print('Performing matrix operations')
 
-		rows = len(sigma)
+			# rotate the matrix so that it is words down and documents across
+			rotatedMatrix = [*zip(*matrix)]
+			# print(len(rotatedMatrix))
+			# print(rotatedMatrix)
 
-		# eliminate unimportant dimensions
-		if dimensionsToReduce < rows:
-			print('Reducing dimensions')
-			for index in range(rows - int(dimensionsToReduce), rows):
-				sigma[index] = 0
+			# math stuff
+			u,sigma,vt = linalg.svd(rotatedMatrix)
 
-		# reconstruct matrix
-		transformedMatrix = dot(dot(u, linalg.diagsvd(sigma, len(rotatedMatrix), len(vt))) ,vt)
-		#print(transformedMatrix)
+			dimensionsToReduce = linalg.norm(sigma)
+			# print(dimensionsToReduce)
 
-		# this matrix has words down and documents across, showing weighted values for each
-		# m_nonzero_rows = m[[i for i, x in enumerate(m) if x.any()]]
-		# print(transformedMatrix)
+			rows = len(sigma)
 
-		transformedMatrix = transformedMatrix.tolist()
+			# eliminate unimportant dimensions
+			if dimensionsToReduce < rows:
+				print('Reducing dimensions')
+				for index in range(rows - int(dimensionsToReduce), rows):
+					sigma[index] = 0
 
-		outFile = 'lsa_matrix_' + str(n) + '.txt'
+			# reconstruct matrix
+			print('Reconstructing matrix')
+			transformedMatrix = dot(dot(u, linalg.diagsvd(sigma, len(rotatedMatrix), len(vt))) ,vt)
+			print(transformedMatrix)
+			#print(transformedMatrix)
 
-		with open(outFile,'w') as o:
-			for row in transformedMatrix:
-				for column in row:
-					o.write('%s\n' % str(column))
+			# this matrix has words down and documents across, showing weighted values for each
+			# m_nonzero_rows = m[[i for i, x in enumerate(m) if x.any()]]
+			# print(transformedMatrix)
+
+			transformedMatrix = transformedMatrix.tolist()
+
+			outFile = 'lsa_matrix_' + str(n) + '.txt'
+
+			with open(outFile,'w') as o:
+				for row in transformedMatrix:
+					for column in row:
+						o.write('%s\n' % str(column))
