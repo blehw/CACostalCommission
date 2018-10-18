@@ -4,19 +4,22 @@ import numpy
 import math
 from scipy import linalg, dot
 import string
-import nltk # $ pip install nltk
 from nltk.corpus import stopwords
+from stemming.porter2 import stem
+import re
 
 numpy.set_printoptions(threshold=numpy.nan)
 
 lineNum = 1000
 # this is the column that the text is in
 documentColNum = 0
-startYear = 1998
+startYear = 2016
 endYear = 2016
 yearColNum = 2
 
-doneYears = [2001, 2011]
+doneYears = []
+regex = re.compile('[^a-zA-Z]')
+stopwords = stopwords.words('english')
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
@@ -27,7 +30,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
-	for n in range(startYear, endYear + 1, 2):
+	for n in range(startYear, endYear + 1):
 
 		if n not in doneYears:
 
@@ -49,30 +52,21 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			tfs = []
 
 			numDocs = 0
-			pop = popularWords.copy()
 
 			for row in reader:
 				if row[yearColNum] == str(n):
 					usedWords = []
 					tfList = [0 for i in range(len(popularWords))]
-				# if an entry of text contains a certain word, increment that value in our list by 1
+					# if an entry of text contains a certain word, increment that value in our list by 1
 					#for i in range(len(popularWords)):
-					tokens = nltk.word_tokenize(row[documentColNum])
-					tagged = nltk.pos_tag(tokens)
-					for tag in tagged:
-						word = tag[0].lower()
-						if word in popularWords:
+					for w in row[documentColNum].split():
+						word = regex.sub('', w.lower())
+						#word = regex.sub('', stem(w.lower()))
+						if (word not in stopwords) and (word != ''):
 							tfList[popularWords.index(word)] += 1
 							if word not in usedWords:
 								idfList[popularWords.index(word)] += 1
 								usedWords.append(word)
-							if word in pop:
-								pop.remove(word)
-						
-						'''
-						if popularWords[i] in row[documentColNum].lower():
-							idfList[i] += 1
-						'''
 					numDocs += 1
 					tfs.append(tfList)
 
@@ -88,18 +82,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 			matrixList = []
 
-			'''
-			for row in reader:
-				if row[yearColNum] == str(n):
-					tfidfList = [0 for i in range(len(popularWords))]
-					tfList = [0 for i in range(len(popularWords))]
-					# count number of times each word appears in each line
-					for word in row[documentColNum].split():
-						for popWord in popularWords:
-							if word == popWord:
-								tfList[popularWords.index(word)] += 1
-					'''
-					# multiply the term frequenc by the appropriate weighing
 			for tfList in tfs:
 				tfidfList = [0 for i in range(len(popularWords))]
 				for i in range(len(tfList)):
@@ -112,8 +94,9 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 			# rotate the matrix so that it is words down and documents across
 			rotatedMatrix = [*zip(*matrix)]
+			print(rotatedMatrix[0])
+			print(rotatedMatrix[1])
 			# print(len(rotatedMatrix))
-			# print(rotatedMatrix)
 
 			# math stuff
 			u,sigma,vt = linalg.svd(rotatedMatrix)
@@ -132,7 +115,6 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			# reconstruct matrix
 			print('Reconstructing matrix')
 			transformedMatrix = dot(dot(u, linalg.diagsvd(sigma, len(rotatedMatrix), len(vt))) ,vt)
-			print(transformedMatrix)
 			#print(transformedMatrix)
 
 			# this matrix has words down and documents across, showing weighted values for each
@@ -141,7 +123,7 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
 			transformedMatrix = transformedMatrix.tolist()
 
-			outFile = 'lsa_matrix_' + str(n) + '.txt'
+			outFile = 'lsa_matrix2_' + str(n) + '.txt'
 
 			with open(outFile,'w') as o:
 				for row in transformedMatrix:

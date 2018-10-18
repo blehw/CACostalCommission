@@ -1,8 +1,8 @@
 import csv
 import sys
-import nltk # $ pip install nltk
 from nltk.corpus import stopwords
 from stemming.porter2 import stem
+import re
 
 csv.field_size_limit(sys.maxsize)
 stopwords = stopwords.words('english')
@@ -12,15 +12,18 @@ inputFile = 'all_data_w_paragraphs_public_access.csv'
 # since the file is so large, this indicates how many lines we want to read
 lineNum = 1000
 documentColNum = 0
-startYear = 2016
+startYear = 1996
 endYear = 2016
 yearColNum = 2
 
-doneYears = [2001, 2011]
+doneYears = []
+#years = [1998, 2000, 2002, 2004, 2011, 2016]
+regex = re.compile('[^a-zA-Z]')
 
 with open(inputFile, encoding='ISO-8859-1') as csvFile:
 
-	for n in range(startYear, endYear + 1, 10):
+	#for n in range(startYear, endYear + 1, 10):
+	for n in range(startYear, endYear + 1):
 
 		if n not in doneYears:
 
@@ -35,18 +38,11 @@ with open(inputFile, encoding='ISO-8859-1') as csvFile:
 			for row in reader:
 				# if (reader.line_num < lineNum):
 				if row[yearColNum] == str(n):
-					tokens = nltk.word_tokenize(row[documentColNum])
-					tagged = nltk.pos_tag(tokens)
-					for tag in tagged:
-						stemWord = tag[0]#.lower()
-						# if we find a pronoun, add it to the list of words that we don't want
-						if (tag[1].startswith('NNP')):
-							badWords.append(stemWord)
-							# and erase all previous entries in our dictionary of that word
-							if (stemWord in d):
-								d[stemWord] = 0
+					for string in row[documentColNum].split(' '):
+						stemWord = regex.sub('', string.lower())
+						#stemWord = regex.sub('', stem(string.lower()))
 						# add word to our dictionary
-						elif (tag[1].startswith('V') or tag[1] == 'NN' or tag[1] == 'NNS') and (stemWord not in stopwords) and ('.' not in stemWord) and (stemWord != '[' and stemWord != ']') and (stemWord not in badWords):
+						if (stemWord not in stopwords) and (stemWord != ''):
 							if stemWord in d:
 								d[stemWord] += 1
 							else:

@@ -2,27 +2,29 @@ import csv
 import numpy
 from scipy import linalg, dot, spatial
 import matplotlib.pyplot as plt
+from stemming.porter2 import stem
+import re
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-lineNum = 1000
-startYear = 2001
+startYear = 1996
 endYear = 2016
 yearColNum = 2
+
+regex = re.compile('[^a-zA-Z]')
 
 index = 0
 allPopularWords = []
 
-for n in range(startYear, endYear + 1, 5):
+for n in range(startYear, endYear + 1):
 	wordsFile = 'lsa_popular_words_' + str(n) + '.txt'
 	with open(wordsFile) as f:
 		popularWords = f.read().splitlines()
 	allPopularWords.append(popularWords)
 
-doneYears = [2001, 2006, 2011, 2016]
 volatilities = []
 
-for n in range(startYear, endYear + 1, 5):
+for n in range(startYear, endYear + 1):
 
 	print(n)
 
@@ -35,14 +37,17 @@ for n in range(startYear, endYear + 1, 5):
 
 	matrixFile = 'lsa_matrix_' + str(n) + '.txt'
 
+	matrixNums = []
 	with open(matrixFile) as f:
-		matrixNums = f.read().splitlines()
+		for line in f:
+			matrixNums.append(line)
+		#matrixNums = f.read().splitlines()
 	
 	popularWords = allPopularWords[index]
 
-	string = 'seawall'
+	w = 'flood'
 
-	if string not in popularWords:
+	if w not in popularWords:
 		volatilities.append(0)
 	else:
 		matrixNums = [float(i) for i in matrixNums]
@@ -60,7 +65,7 @@ for n in range(startYear, endYear + 1, 5):
 		for row in matrix:
 			not_zeros = row.any()
 			if not_zeros:
-				dists.append(spatial.distance.cosine(matrix[popularWords.index(string)], row))
+				dists.append(spatial.distance.cosine(matrix[popularWords.index(w)], row))
 			else:
 				dists.append(1)
 
@@ -72,14 +77,12 @@ for n in range(startYear, endYear + 1, 5):
 				relatedWords.append(popularWords[dists.index(x)])
 				relatedDists.append(x)
 
-		if string in relatedWords:
-			relatedWords.remove(string)
+		if w in relatedWords:
+			relatedWords.remove(w)
 			relatedDists.remove(0)
-		print('Words most related to ' + string + ' in ' + str(n) + ':')
-		'''
+		print('Words most related to ' + w + ' in ' + str(n) + ':')
 		for word in relatedWords[:10]:
 			print(word)
-		'''
 
 		sigOccurences = []
 
@@ -95,12 +98,17 @@ for n in range(startYear, endYear + 1, 5):
 					ranks.append(len(year))
 				else:
 					ranks.append(year.index(word) + 1)
+			# check if negative
 			coVariations.append(numpy.std(ranks) / numpy.mean(ranks))
 
 		volatilities.append(numpy.mean(coVariations))
 
 	index += 1
 
-plt.plot(doneYears, volatilities)
-#plt.yticks(np.arange(min(volatilities), max(volatilities)+0.1, 0.1))
+f = plt.figure()
+plt.plot(range(startYear, endYear + 1), volatilities)
+plt.yticks(numpy.arange(min(volatilities), max(volatilities)+0.1, 0.1))
 plt.show()
+
+pdfName = w + '.pdf'
+f.savefig(pdfName, bbox_inches='tight')
