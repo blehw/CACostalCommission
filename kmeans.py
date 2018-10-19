@@ -83,8 +83,8 @@ def getMatrices():
             print('Performing matrix operations')
 
             # rotate the matrix so that it is words down and documents across
-            rotatedMatrix = [*zip(*matrix)]
-            matrices.append(rotatedMatrix)
+            #rotatedMatrix = [*zip(*matrix)]
+            matrices.append(matrix)
         return matrices
 
 def convertMatricesToExamples(matrices):
