@@ -9,7 +9,6 @@ from scipy import linalg, dot
 import string
 from nltk.corpus import stopwords
 import nltk
-nltk.download('stopwords')
 from stemming.porter2 import stem
 import re
 import random
@@ -40,6 +39,9 @@ def getMatrices():
 
             with open(fileName) as f:
                 popularWords = f.read().splitlines()
+
+            # look at only the top 100 words
+            popularWords = popularWords[:500]
             print(len(popularWords))
 
             print('Constructing tf-idf matrix')
@@ -59,7 +61,7 @@ def getMatrices():
                     for w in row[documentColNum].split():
                         word = regex.sub('', w.lower())
                         #word = regex.sub('', stem(w.lower()))
-                        if (word not in stopwords) and (word != ''):
+                        if (word not in stopwords) and (word != '') and (word in popularWords):
                             tfList[popularWords.index(word)] += 1
                             if word not in usedWords:
                                 idfList[popularWords.index(word)] += 1
@@ -90,15 +92,20 @@ def getMatrices():
             # rotate the matrix so that it is words down and documents across
             #rotatedMatrix = [*zip(*matrix)]
             matrices.append(matrix)
-        return matrices
+    csvFile.close()
+    return matrices
 
 def convertMatricesToExamples(matrices):
+    fileName = 'lsa_popular_words_1996.txt'
+    with open(fileName) as f:
+        popularWords = f.read().splitlines()
+    f.close()
     examples = []
     for matrix in matrices:
         for row in matrix:
             d = {}
             for i in range(len(row)):
-                d[i] = row[i]
+                d[popularWords[i]] = row[i]
             examples.append(d)
     return examples
 
@@ -126,6 +133,7 @@ def kmeans(examples, K, maxIters):
 
     # NOTE: clusters are 0-indexed
     for iteration in range(maxIters):
+        print('Iteration ' + str(iteration))
         prevAssignments = assignments[:]
         centroidDotCache = collections.defaultdict(int)
         for i in range(len(centroids)): # precompute and map the index of a centroid to (centroid dot centroid)
@@ -154,22 +162,49 @@ def kmeans(examples, K, maxIters):
             increment(average, 1.0/numExamplesAtCluster[c], sumOfExamplesAtCluster[c])
             centroids[c] = average
 
-        # prints for testing
-        print('Completed iteration', iteration)
-
     # calculate loss
     loss = 0.0
     for e in range(len(examples)):
         squaredDistance = exampleDotCache[e] - 2*dotProduct(examples[e], centroids[assignments[e]]) + centroidDotCache[assignments[e]]
         loss += squaredDistance
-    print('Centroids:', centroids)
-    print('Assignments:', assignments)
+    #print('Centroids:', centroids)
+    #print('Assignments:', assignments)
     print('Loss:', loss)
+    outFile = 'kmeans.txt'
+    with open(outFile,'w') as o:
+        o.write('%s\n' % str(centroids))
+        o.write('%s\n' % str(assignments))
+        o.write('%s\n' % str(loss))
+    o.close()
 
     return centroids, assignments, loss
+
+def outputClusters(path, examples, centers, assignments):
+    '''
+    Output the clusters to the given path.
+    '''
+    print('Outputting clusters to %s' % path)
+    out = open(path, 'w')
+    for j in range(len(centers)):
+        out.write('====== Cluster %s\n' % j)
+        out.write('--- Centers:\n')
+        for t in sorted(centers[j].items()):
+            k = t[0]
+            v = t[1]
+            if v != 0:
+                out.write('%s\t%s\n' % (k, v))
+        '''
+        out.write('--- Assigned points:')
+        for i, z in enumerate(assignments):
+            if z == j:
+                out.write(' '.join(examples[i].keys()))
+        '''
+    out.close()
 
 ###########################################################################
 
 matrices = getMatrices()
 examples = convertMatricesToExamples(matrices)
 centroids, assignments, loss = kmeans(examples, 6, 100)
+outputClusters('kmeans_clusters.txt', examples, centroids, assignments)
+print(assignments.count(0), assignments.count(1), assignments.count(2), assignments.count(3), assignments.count(4), assignments.count(5))
