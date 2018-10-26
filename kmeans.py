@@ -23,8 +23,8 @@ numpy.set_printoptions(threshold=numpy.nan)
 
 # this is the column that the text is in
 documentColNum = 0
-startYear = 1996
-endYear = 1996
+startYear = 2016
+endYear = 2016
 yearColNum = 2
 
 regex = re.compile('[^a-zA-Z]')
@@ -46,7 +46,7 @@ def getMatrices():
                 popularWords = f.read().splitlines()
 
             # look at only the top 100 words
-            popularWords = popularWords[:500]
+            popularWords = popularWords[:1000]
             print(len(popularWords))
 
             print('Constructing tf-idf matrix')
@@ -92,7 +92,7 @@ def getMatrices():
             
             matrix = numpy.array(matrixList)
 
-            print('Performing matrix operations')
+            #print('Performing matrix operations')
 
             # rotate the matrix so that it is words down and documents across
             #rotatedMatrix = [*zip(*matrix)]
@@ -137,9 +137,10 @@ def kmeans(examples, K, maxIters):
     for i in range(len(examples)): # precompute and map the index of an example to (example dot example)
         exampleDotCache[i] = dotProduct(examples[i], examples[i])
 
+    print('Starting k-means clustering')
     # NOTE: clusters are 0-indexed
     for iteration in range(maxIters):
-        print('Iteration ' + str(iteration))
+        print('Iteration ' + str(iteration+1))
         prevAssignments = assignments[:]
         centroidDotCache = collections.defaultdict(int)
         for i in range(len(centroids)): # precompute and map the index of a centroid to (centroid dot centroid)
@@ -194,7 +195,8 @@ def outputClusters(path, examples, centers, assignments):
     for j in range(len(centers)):
         out.write('====== Cluster %s\n' % j)
         out.write('--- Centers:\n')
-        for t in sorted(centers[j].items()):
+        sortedCenters = sorted(centers[j].items(), key=lambda kv: kv[1], reverse=True)
+        for t in sortedCenters[:10]:
             k = t[0]
             v = t[1]
             if v != 0:
@@ -212,5 +214,6 @@ def outputClusters(path, examples, centers, assignments):
 matrices = getMatrices()
 examples = convertMatricesToExamples(matrices)
 centroids, assignments, loss = kmeans(examples, 6, 100)
-outputClusters('kmeans_clusters.txt', examples, centroids, assignments)
-print(assignments.count(0), assignments.count(1), assignments.count(2), assignments.count(3), assignments.count(4), assignments.count(5))
+outputClusters('kmeans_clusters_' + str(startYear) + '.txt', examples, centroids, assignments)
+for i in range(6):
+    print('Cluster ' + str(i+1) + ': ' + str(assignments.count(i)))
