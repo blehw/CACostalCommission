@@ -1,7 +1,7 @@
 # big idea:
-# calculate matrix (rows -> documents, cols -> top-500 words)
+# calculate matrix (rows -> permits, cols -> top-500 words)
 # turn each row into an example to use in kmeans algorithm
-# documents' features are their top-500 words
+# permit's features are its top-500 words
 
 # before running this script, do:
 # pip install stemming
