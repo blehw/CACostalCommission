@@ -7,7 +7,7 @@ import re
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-startYear = 1996
+startYear = 2016
 endYear = 2016
 yearColNum = 2
 
@@ -45,7 +45,7 @@ for n in range(startYear, endYear + 1):
 	
 	popularWords = allPopularWords[index]
 
-	w = 'flood'
+	w = 'shoreline'
 
 	if w not in popularWords:
 		volatilities.append(0)
@@ -81,8 +81,8 @@ for n in range(startYear, endYear + 1):
 			relatedWords.remove(w)
 			relatedDists.remove(0)
 		print('Words most related to ' + w + ' in ' + str(n) + ':')
-		for word in relatedWords[:10]:
-			print(word)
+		for i in range(10):
+			print(str(relatedWords[i]) + ' ' + str(relatedDists[i]))
 
 		sigOccurences = []
 
