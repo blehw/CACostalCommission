@@ -13,13 +13,18 @@ from stemming.porter2 import stem
 import re
 import random
 import collections
+from sklearn.manifold import TSNE
+from bokeh.plotting import figure, output_file, show
+from bokeh.models import Label
+from bokeh.io import output_notebook
+#output_notebook()
 
 numpy.set_printoptions(threshold=numpy.nan)
 
 # this is the column that the text is in
 documentColNum = 0
-startYear = 2016
-endYear = 2016
+startYear = 2008
+endYear = 2008
 yearColNum = 2
 
 regex = re.compile('[^a-zA-Z]')
@@ -41,7 +46,7 @@ def getMatrices():
                 popularWords = f.read().splitlines()
 
             # look at only the top 100 words
-            popularWords = popularWords[:1000]
+            popularWords = popularWords[:400]
             print(len(popularWords))
 
             print('Constructing tf-idf matrix')
@@ -122,63 +127,67 @@ def increment(d1, scale, d2):
         d1[f] = d1.get(f, 0) + v * scale
 
 def kmeans(examples, K, maxIters):
-    # initialize k cluster centroids u_0,...,u_k-1 to random elements of examples
     centroids = random.sample(examples, K)
-    assignments = [-1 for i in range(len(examples))] # contains z_0,...,z_n-1 and tells us which cluster 0,...,K-1 each example is assigned to
-    # examplesClustered = [[] for i in range(K)] # list of lists of examples at each cluster (index represents the cluster number)
-    cache = collections.defaultdict(int) # key = distance between feature and centroid vectors, value = squared distance
-    exampleDotCache = collections.defaultdict(int)
-    for i in range(len(examples)): # precompute and map the index of an example to (example dot example)
-        exampleDotCache[i] = dotProduct(examples[i], examples[i])
-
-    print('Starting k-means clustering')
-    # NOTE: clusters are 0-indexed
-    for iteration in range(maxIters):
-        print('Iteration ' + str(iteration+1))
-        prevAssignments = assignments[:]
-        centroidDotCache = collections.defaultdict(int)
-        for i in range(len(centroids)): # precompute and map the index of a centroid to (centroid dot centroid)
-            centroidDotCache[i] = dotProduct(centroids[i], centroids[i])
-        sumOfExamplesAtCluster = [collections.defaultdict(int) for i in range(K)] # maintains sum of examples at a particular cluster (index)
-        numExamplesAtCluster = [0 for i in range(K)] # maintains how many examples are at a particular cluster (index)
-
-        ### STEP 1: Assign each example to best cluster
-        for e in range(len(examples)): # calculate the cluster each example will be assigned to
-            squaredDistances = [] # list of distances of examples from centroids (cluster numbers are the indices of this list) 
-            for c in range(K):
-                squaredDist = exampleDotCache[e] - 2*dotProduct(examples[e], centroids[c]) + centroidDotCache[c]
-                squaredDistances.append(squaredDist)
-            minSquaredDist = min(squaredDistances)
-            assignments[e] = squaredDistances.index(minSquaredDist) # keep track of assignments of each example to a cluster
-            increment(sumOfExamplesAtCluster[assignments[e]], 1.0, examples[e]) 
-            numExamplesAtCluster[assignments[e]] += 1
-
-        if assignments == prevAssignments: # convergence has been reached
+    assignments = [0 for i in range(len(examples))]
+    cache = {}
+    for i in range(maxIters):
+        tempAssignments = [0 for i in range(len(examples))]
+        for e in range(len(examples)):
+            minCentroid = 0
+            scalarMinDist = float('inf')
+            for j in range(len(centroids)):
+                ex = examples[e].copy()
+                distance = 0
+                for val in ex.keys():
+                    num = 0 
+                    if val in centroids[j]:
+                        num = centroids[j][val]
+                    if ex[val] != 0:
+                        num -= ex[val]
+                    if num in cache:
+                        distance += cache[num]
+                    else:
+                        squared = num * num
+                        distance += squared
+                        cache[num] = squared
+                if distance < scalarMinDist:
+                    minCentroid = j
+                    scalarMinDist = distance
+            tempAssignments[e] = minCentroid
+        if sorted(tempAssignments) == sorted(assignments):
             break
-
-        ### STEP 2: Find best centroid for each cluster    
-        for c in range(K): # iterate thru clusters and update centroid for each one
-            ### Calculate average sparse vector of this cluster
-            average = collections.defaultdict(int)
-            increment(average, 1.0/numExamplesAtCluster[c], sumOfExamplesAtCluster[c])
-            centroids[c] = average
-
-    # calculate loss
-    loss = 0.0
-    for e in range(len(examples)):
-        squaredDistance = exampleDotCache[e] - 2*dotProduct(examples[e], centroids[assignments[e]]) + centroidDotCache[assignments[e]]
-        loss += squaredDistance
-    #print('Centroids:', centroids)
-    #print('Assignments:', assignments)
-    print('Loss:', loss)
-    outFile = 'kmeans.txt'
-    with open(outFile,'w') as o:
-        o.write('%s\n' % str(centroids))
-        o.write('%s\n' % str(assignments))
-        o.write('%s\n' % str(loss))
-    o.close()
-
-    return centroids, assignments, loss
+        newCentroids = [{} for i in range(K)]
+        counts = [0 for i in range(K)]
+        for k in range(len(tempAssignments)):
+            asssignedCentroid = tempAssignments[k]
+            example = examples[k].copy()
+            counts[asssignedCentroid] += 1
+            increment(newCentroids[asssignedCentroid], 1, example)
+        for c in range(len(newCentroids)):
+            centroid = newCentroids[c]
+            for key in centroid:
+                centroid[key] = centroid[key] / float(counts[c])
+        assignments = tempAssignments
+        centroids = newCentroids
+    totalLoss = 0
+    for m in range(len(assignments)):
+        lossEx = examples[m].copy()
+        loss = 0
+        for val in lossEx.keys(): 
+            num = 0
+            if val in centroids[assignments[m]]:
+                num = centroids[assignments[m]][val]
+            if lossEx[val] != 0:
+                num -= lossEx[val]
+            if num in cache:
+                loss += cache[num]
+            else:
+                squared = num * num
+                loss += squared
+                cache[num] = squared
+        totalLoss += loss
+    print('Loss: ' + str(totalLoss))
+    return centroids, assignments, totalLoss
 
 def outputClusters(path, examples, centers, assignments):
     '''
@@ -186,13 +195,17 @@ def outputClusters(path, examples, centers, assignments):
     '''
     print('Outputting clusters to %s' % path)
     out = open(path, 'w')
+    topThreeWords = ['' for i in range(len(centers))]
     for j in range(len(centers)):
         out.write('====== Cluster %s\n' % j)
         out.write('--- Centers:\n')
         sortedCenters = sorted(centers[j].items(), key=lambda kv: kv[1], reverse=True)
-        for t in sortedCenters[:10]:
-            k = t[0]
-            v = t[1]
+        truncatedSortedCenters = sortedCenters[:20]
+        for t in range(len(truncatedSortedCenters)):
+            if t < 3:
+                topThreeWords[j] += truncatedSortedCenters[t][0] + ' '
+            k = truncatedSortedCenters[t][0]
+            v = truncatedSortedCenters[t][1]
             if v != 0:
                 out.write('%s\t%s\n' % (k, v))
         '''
@@ -202,12 +215,40 @@ def outputClusters(path, examples, centers, assignments):
                 out.write(' '.join(examples[i].keys()))
         '''
     out.close()
+    return topThreeWords
+
+def outputGraph(matrix, numClusters, assignments, topThreeWords):
+    tsne_lsa_model = TSNE(n_components=2, perplexity=50, learning_rate=100, 
+                        n_iter=2000, verbose=1, random_state=0, angle=0.75)
+    tsne_lsa_vectors = tsne_lsa_model.fit_transform(matrix)
+    centroidCounts = [0 for i in range(numClusters)]
+    centroids = [(0,0) for i in range(numClusters)]
+    for i in range(len(assignments)):
+        centroids[assignments[i]] = (centroids[assignments[i]][0] + tsne_lsa_vectors[i][0], centroids[assignments[i]][1] + tsne_lsa_vectors[i][1])
+        centroidCounts[assignments[i]] += 1
+    for i in range(len(centroids)):
+        centroids[i] = tuple(t/centroidCounts[i] for t in centroids[i])
+    colormap = numpy.array([
+    "#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c",
+    "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5",
+    "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
+    "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5" ])
+    colormap = colormap[:numClusters]
+    plot = figure(title="t-SNE Clustering of {} LSA Topics".format(numClusters), plot_width=700, plot_height=700)
+    for t in range(numClusters):
+        label = Label(x=centroids[t][0], y=centroids[t][1], 
+                  text=topThreeWords[t], text_color=colormap[t])
+        plot.add_layout(label)
+    plot.scatter(x=tsne_lsa_vectors[:,0], y=tsne_lsa_vectors[:,1], color=colormap[assignments])
+    show(plot)
 
 ###########################################################################
 
 matrices = getMatrices()
 examples = convertMatricesToExamples(matrices)
-centroids, assignments, loss = kmeans(examples, 6, 100)
-outputClusters('kmeans_clusters_' + str(startYear) + '.txt', examples, centroids, assignments)
-for i in range(6):
-    print('Cluster ' + str(i+1) + ': ' + str(assignments.count(i)))
+numClusters = 8
+centroids, assignments, loss = kmeans(examples, numClusters, 100)
+topThreeWords = outputClusters('kmeans_clusters_' + str(startYear) + '.txt', examples, centroids, assignments)
+for i in range(numClusters):
+    print('Cluster ' + str(i) + ': ' + str(assignments.count(i)))
+outputGraph(numpy.array(matrices[0]),numClusters,assignments,topThreeWords)
