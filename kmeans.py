@@ -1,3 +1,8 @@
+# big idea:
+# calculate matrix (rows -> permits, cols -> top-500 words)
+# turn each row into an example to use in kmeans algorithm
+# permit's features are its top-500 words
+
 # before running this script, do:
 # pip install stemming
 
@@ -100,6 +105,7 @@ def getMatrices():
     csvFile.close()
     return matrices
 
+# turn each row into an example
 def convertMatricesToExamples(matrices):
     fileName = 'lsa_popular_words_1996.txt'
     with open(fileName) as f:
