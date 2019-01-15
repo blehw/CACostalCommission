@@ -1,13 +1,13 @@
 import csv
-import numpy
+import numpy as np
 from scipy import linalg, dot, spatial
 import matplotlib.pyplot as plt
-from stemming.porter2 import stem
+#from stemming.porter2 import stem
 import re
 
 inputFile = 'all_data_w_paragraphs_public_access.csv'
 
-startYear = 2016
+startYear = 1996
 endYear = 2016
 yearColNum = 2
 
@@ -17,7 +17,7 @@ index = 0
 allPopularWords = []
 
 for n in range(startYear, endYear + 1):
-	wordsFile = 'lsa_popular_words_' + str(n) + '.txt'
+	wordsFile = 'lsa_words/lsa_popular_words_' + str(n) + '.txt'
 	with open(wordsFile) as f:
 		popularWords = f.read().splitlines()
 	allPopularWords.append(popularWords)
@@ -37,19 +37,22 @@ for n in range(startYear, endYear + 1):
 
 	matrixFile = 'lsa_matrix_' + str(n) + '.txt'
 
+	'''
 	matrixNums = []
 	with open(matrixFile) as f:
 		for line in f:
 			matrixNums.append(line)
 		#matrixNums = f.read().splitlines()
+	'''
 	
 	popularWords = allPopularWords[index]
 
-	w = 'shoreline'
+	w = 'beach'
 
 	if w not in popularWords:
 		volatilities.append(0)
 	else:
+		'''
 		matrixNums = [float(i) for i in matrixNums]
 		matrixList = []
 
@@ -59,7 +62,10 @@ for n in range(startYear, endYear + 1):
 				row.append(matrixNums[j])
 			matrixList.append(row)
 
-		matrix = numpy.array(matrixList)
+		matrix = np.array(matrixList)
+		'''
+
+		matrix = np.loadtxt(matrixFile)
 
 		dists = []
 		for row in matrix:
@@ -87,7 +93,7 @@ for n in range(startYear, endYear + 1):
 		sigOccurences = []
 
 		for x in range(len(relatedWords)):
-			if relatedDists[x] < 0.8:
+			if relatedDists[x] < 0.5:
 				sigOccurences.append(relatedWords[x])
 
 		coVariations = []
@@ -99,15 +105,15 @@ for n in range(startYear, endYear + 1):
 				else:
 					ranks.append(year.index(word) + 1)
 			# check if negative
-			coVariations.append(numpy.std(ranks) / numpy.mean(ranks))
+			coVariations.append(np.std(ranks) / np.mean(ranks))
 
-		volatilities.append(numpy.mean(coVariations))
+		volatilities.append(np.mean(coVariations))
 
 	index += 1
 
 f = plt.figure()
 plt.plot(range(startYear, endYear + 1), volatilities)
-plt.yticks(numpy.arange(min(volatilities), max(volatilities)+0.1, 0.1))
+plt.yticks(np.arange(min(volatilities), max(volatilities)+0.1, 0.1))
 plt.show()
 
 pdfName = w + '.pdf'
