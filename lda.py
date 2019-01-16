@@ -171,12 +171,12 @@ matrices = getMatrices()
 for num_matrix in range(len(matrices)):
     lda_topic_matrix = lda_model.fit_transform(matrices[num_matrix])
     lda_keys = np.argmax(lda_topic_matrix,axis=1)
-    top_n_words_lda = getPopularWords(matrices[num_matrix], lda_keys, n_topics, 6, wordsToAnalyze//n_topics, num_matrix + startYear)
+    top_n_words_lda = getPopularWords(matrices[num_matrix], lda_keys, n_topics, 6, wordsToAnalyze, num_matrix + startYear)
     tsne_lda_model = TSNE(n_components=2, perplexity=50, learning_rate=100, n_iter=2000, verbose=1, random_state=0, angle=0.75)
     tsne_lda_vectors = tsne_lda_model.fit_transform(lda_topic_matrix)
     lda_mean_topic_vectors = getMeanTopicVectors(lda_keys,tsne_lda_vectors)
 
-    plot = figure(title="t-SNE Clustering of {} LDA Topics in {}".format(n_topics, startYear), plot_width=700, plot_height=700)
+    plot = figure(title="t-SNE Clustering of {} LDA Topics in {}".format(n_topics, str(startYear + num_matrix)), plot_width=700, plot_height=700)
     colormap = np.array([
         "#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c",
         "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5",

@@ -113,14 +113,49 @@ def getWordVolatility(w):
 
 	return volatilities
 
-query = 'beach'
-volatilities = getWordVolatility(query)	
+top_words = 2
+wordsToAnalyze = 1500
+
+cluster_dict = {}
+
+for n in range(1996,2017,1):
+	f = open("lda_words/lda_words_" + str(n) + ".txt")
+	words = f.read().split(" ")[:-1]
+	f.close()
+	cluster_dict[n] = [words[i:i + wordsToAnalyze][:top_words] for i in range(0, len(words), wordsToAnalyze)]
+
+cluster_words = cluster_dict[1996][14]
+for key in cluster_dict.keys():
+	if key != 1996:
+		max_cluster = []
+		for cluster in cluster_dict[key]:
+			new_cluster = list(set(cluster_words) & set(cluster))
+			if len(new_cluster) > len(max_cluster):
+				max_cluster = new_cluster
+		cluster_words = max_cluster
+
+print(cluster_words)
+
+cluster_str = ""
+for w in cluster_words:
+	cluster_str += w + " "
+print(cluster_words)
+
+print('Analyzing')
+volatilities = np.zeros((endYear - startYear + 1))
+for word in cluster_words:
+	v= np.array(getWordVolatility(word))
+	volatilities += v
+
+volatilities = np.divide(volatilities, len(cluster_words))
+volatilities = volatilities.tolist()
+print(volatilities)
 
 f = plt.figure()
 plt.plot(range(startYear, endYear + 1), volatilities)
-f.suptitle(query, fontsize=20)
+f.suptitle(cluster_str, fontsize=5)
 plt.yticks(np.arange(min(volatilities), max(volatilities), 0.1))
 plt.show()
 
-pdfName = query + '.pdf'
+pdfName =  'cluster0.pdf'
 f.savefig(pdfName, bbox_inches='tight')
