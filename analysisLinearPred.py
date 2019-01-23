@@ -12,21 +12,28 @@ OUTCOME_IND = 4
 # feature is list of sections, 1 for mentioned, 0 for not mentioned
 def feature_extractor(row):
     features = []
+    #ind = [214,277,246,70,278,209,134,202,244,83,106,218,285,91,32,13,267,210,9,280,239,44,228,155,212,292,90,317,273,293]
+    n = 0
     for i in row[SECTIONS_START_IND:]:
+        #if n in ind or n > len(row[SECTIONS_START_IND:]) - 21: 
         if i == '':
             features.append(0)
         else:
             features.append(float(i))
+            #features.append(1)
+        n += 1
     return np.array(features)
 
 
 def learn_predictor(train_examples, test_examples, num_iters, eta):
     weights = np.zeros(len(train_examples[0][0])-SECTIONS_START_IND).astype(float)
+    #weights = np.zeros(50).astype(float)
     
     def predictor(row):
         return 1 if np.dot(weights, feature_extractor(row)) > 0 else -1
 
     for i in range(int(num_iters)):
+        print("Iterations", i)
         for row,value in train_examples:
             features = feature_extractor(row)
             # using hinge loss
@@ -34,12 +41,20 @@ def learn_predictor(train_examples, test_examples, num_iters, eta):
                 # update weights
                 gradient_loss = -1 * features * value
                 weights -= (eta * gradient_loss)
+        #print(weights)
         print('Training Error:', evaluate_predictor(train_examples, predictor))
         print('Testing Error:', evaluate_predictor(test_examples, predictor))
+
+    np.savetxt("predictor_weights.txt", weights)
+
+    #ind = (-weights).argsort()[:30]
+    #print(ind)
 
     return weights
 
 ################################  HELPER FUNCTIONS  ####################################
+
+matrix = np.loadtxt("clusters_data.txt")
 
 # returns an array of (row,value) pairs, where value is +1 for APPROVED and -1 otherwise
 def create_examples():
@@ -47,9 +62,16 @@ def create_examples():
     with open(input_file, encoding='ISO-8859-1') as input:
         reader = csv.reader(input)
         next(reader)
+        n = 0
         for row in reader:
+            for i in range(20):
+                if i == matrix[n]:
+                    row.append("1")
+                else:
+                    row.append("0")
             value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
-            examples.append((row, value))     
+            examples.append((row, value))   
+            n += 1  
     return np.array(examples)
 
 # Output error rates
@@ -78,7 +100,7 @@ def main(args):
     np.random.shuffle(examples)
     train_examples = examples[:9*num_rows//10]
     test_examples = examples[9*num_rows//10:]
-    num_iters = 20
+    num_iters = 1000
     eta = 0.001
     learn_predictor(train_examples, test_examples, num_iters, eta)
     

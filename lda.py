@@ -18,7 +18,7 @@ wordsToAnalyze = 1500
 
 allPopularWords = {}
 for n in range(startYear, endYear + 1):
-    #fileName ='lsa_popular_words_.txt'
+    #fileName ='lsa_popular_words.txt'
     fileName = 'lsa_words/lsa_popular_words_' + str(n) + '.txt'
     with open(fileName) as f:
         yearPopularWords = f.read().splitlines()

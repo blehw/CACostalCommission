@@ -131,7 +131,7 @@ def nbcTrain(columns, laws, file):
 		handCodeTypes = 12
 		typeColumn = 6
 		outcomeColumn = 4
-		trainNum = 2000
+		trainNum = 1500
 		totalInstances = rows - trainNum
 
 		'''
@@ -261,7 +261,7 @@ def nbcPred(columns, laws, file, mles):
 		handCodeTypes = 12
 		typeColumn = 6
 		outcomeColumn = 4
-		trainNum = 2000
+		trainNum = 1500
 
 		reader = csv.reader(input)
 		# number of values in each training instance

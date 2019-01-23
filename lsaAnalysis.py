@@ -37,7 +37,7 @@ def getWordVolatility(w):
 				if row[yearColNum] == str(n):
 					numDocs += 1
 
-		matrixFile = 'lsa_matrix_' + str(n) + '.txt'
+		matrixFile = 'lsa_matrix/lsa_matrix_' + str(n) + '.txt'
 
 		'''
 		matrixNums = []
@@ -113,13 +113,14 @@ def getWordVolatility(w):
 
 	return volatilities
 
-query = 'beach'
+query = 'seawall'
 volatilities = getWordVolatility(query)	
+print(volatilities)
 
 f = plt.figure()
 plt.plot(range(startYear, endYear + 1), volatilities)
 f.suptitle(query, fontsize=20)
-plt.yticks(np.arange(min(volatilities), max(volatilities), 0.1))
+plt.yticks(np.arange(min(volatilities), max(volatilities), 0.01))
 plt.show()
 
 pdfName = query + '.pdf'

@@ -18,7 +18,7 @@ def getWordVolatility(w):
 	index = 0
 	allPopularWords = []
 
-	for n in range(startYear, endYear + 1):
+	for n in range(startYear, endYear + 1,2):
 		wordsFile = 'lsa_words/lsa_popular_words_' + str(n) + '.txt'
 		with open(wordsFile) as f:
 			popularWords = f.read().splitlines()
@@ -26,7 +26,7 @@ def getWordVolatility(w):
 
 	volatilities = []
 
-	for n in range(startYear, endYear + 1):
+	for n in range(startYear, endYear + 1,2):
 
 		print(n)
 
@@ -37,7 +37,7 @@ def getWordVolatility(w):
 				if row[yearColNum] == str(n):
 					numDocs += 1
 
-		matrixFile = 'lsa_matrix_' + str(n) + '.txt'
+		matrixFile = 'lsa_matrix/lsa_matrix_' + str(n) + '.txt'
 
 		'''
 		matrixNums = []
@@ -113,7 +113,7 @@ def getWordVolatility(w):
 
 	return volatilities
 
-top_words = 2
+top_words = 100
 wordsToAnalyze = 1500
 
 cluster_dict = {}
@@ -124,16 +124,22 @@ for n in range(1996,2017,1):
 	f.close()
 	cluster_dict[n] = [words[i:i + wordsToAnalyze][:top_words] for i in range(0, len(words), wordsToAnalyze)]
 
-cluster_words = cluster_dict[1996][14]
+year = 1996
+c = 4
+
+cluster_words = cluster_dict[year][c]
+
 for key in cluster_dict.keys():
-	if key != 1996:
+	if key != year and key % 4 == 0:
 		max_cluster = []
 		for cluster in cluster_dict[key]:
-			new_cluster = list(set(cluster_words) & set(cluster))
+			set_2 = frozenset(cluster)
+			new_cluster = [x for x in cluster_words if x in set_2]
 			if len(new_cluster) > len(max_cluster):
 				max_cluster = new_cluster
 		cluster_words = max_cluster
 
+#cluster_words = cluster_words[:10]
 print(cluster_words)
 
 cluster_str = ""
@@ -142,7 +148,7 @@ for w in cluster_words:
 print(cluster_words)
 
 print('Analyzing')
-volatilities = np.zeros((endYear - startYear + 1))
+volatilities = np.zeros(((endYear - startYear)//2 + 1))
 for word in cluster_words:
 	v= np.array(getWordVolatility(word))
 	volatilities += v
@@ -152,10 +158,10 @@ volatilities = volatilities.tolist()
 print(volatilities)
 
 f = plt.figure()
-plt.plot(range(startYear, endYear + 1), volatilities)
+plt.plot(range((endYear - startYear)//2 + 1), volatilities)
 f.suptitle(cluster_str, fontsize=5)
-plt.yticks(np.arange(min(volatilities), max(volatilities), 0.1))
+plt.yticks(np.arange(min(volatilities), max(volatilities), 0.01))
 plt.show()
 
-pdfName =  'cluster0.pdf'
+pdfName =  'cluster3.pdf'
 f.savefig(pdfName, bbox_inches='tight')
