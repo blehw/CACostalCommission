@@ -34,10 +34,33 @@ def learn_predictor(train_examples, test_examples, num_iters, eta):
                 # update weights
                 gradient_loss = -1 * features * value
                 weights -= (eta * gradient_loss)
+        print('Iteration', i)
         print('Training Error:', evaluate_predictor(train_examples, predictor))
         print('Testing Error:', evaluate_predictor(test_examples, predictor))
+        # print(i, weights)
 
     return weights
+
+def get_top_accept_sections(weights, num_sections):
+    inds = (-weights).argsort()[:num_sections]
+    with open(input_file, encoding='ISO-8859-1') as input:
+        reader = csv.reader(input)
+        row = next(reader)
+    res = []
+    for i in inds:
+        res.append(row[i+8])
+    return res
+
+def get_top_reject_sections(weights, num_sections):
+    inds = (weights).argsort()[:num_sections]
+    with open(input_file, encoding='ISO-8859-1') as input:
+        reader = csv.reader(input)
+        row = next(reader)
+    res = []
+    for i in inds:
+        res.append(row[i+8])
+    return res
+
 
 ################################  HELPER FUNCTIONS  ####################################
 
@@ -80,7 +103,11 @@ def main(args):
     test_examples = examples[9*num_rows//10:]
     num_iters = 20
     eta = 0.001
-    learn_predictor(train_examples, test_examples, num_iters, eta)
+    weights = learn_predictor(train_examples, test_examples, num_iters, eta)
+    top_accept_sections = get_top_accept_sections(weights, 10) # gets sections with highest weights
+    top_reject_sections = get_top_reject_sections(weights, 10)
+    print('Most important sections for acceptances:', top_accept_sections)
+    print('Most important sections for rejections:', top_reject_sections)
     
 
 if __name__ == '__main__':
