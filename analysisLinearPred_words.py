@@ -7,14 +7,16 @@ import re
 from nltk.corpus import stopwords
 
 csv.field_size_limit(sys.maxsize)
-input_file = 'all_data_v3.csv'
+input_file = 'all_data_w_paragraphs_public_access.csv'
 DOCUMENT_IND = 0
 OUTCOME_IND = 5
 f = open("lsa_words/lsa_popular_words_.txt", "r")
 vocab = {}
+vocab_ind2word = {}
 index = 0
 for line in f:
     vocab[line.strip()] = index
+    vocab_ind2word[index] = line.strip()
     index += 1
 regex = re.compile('[^a-zA-Z]')
 stopwords = stopwords.words('english')
@@ -72,7 +74,8 @@ def get_top_accept_sections(weights, num_sections):
         row = next(reader)
     res = []
     for i in inds:
-        res.append(row[i+8])
+        # res.append(row[i+8])
+        res.append(vocab_ind2word[i])
     return res
 
 def get_top_reject_sections(weights, num_sections):
@@ -82,7 +85,8 @@ def get_top_reject_sections(weights, num_sections):
         row = next(reader)
     res = []
     for i in inds:
-        res.append(row[i+8])
+        # res.append(row[i+8])
+        res.append(vocab_ind2word[i])
     return res
 
 ################################  HELPER FUNCTIONS  ####################################
