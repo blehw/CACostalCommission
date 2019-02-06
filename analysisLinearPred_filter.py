@@ -8,7 +8,7 @@ csv.field_size_limit(sys.maxsize)
 input_file = 'all_data_v3.csv'
 DOCUMENT_IND = 0
 SECTIONS_START_IND = 8
-OUTCOME_IND = 4
+OUTCOME_IND = 5
 
 # feature is list of sections, 1 for mentioned, 0 for not mentioned
 def feature_extractor(row):

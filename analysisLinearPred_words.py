@@ -7,7 +7,7 @@ import re
 from nltk.corpus import stopwords
 
 csv.field_size_limit(sys.maxsize)
-input_file = 'all_data_w_paragraphs_public_access.csv'
+input_file = 'all_data_v3.csv'
 DOCUMENT_IND = 0
 OUTCOME_IND = 5
 f = open("lsa_words/lsa_popular_words_.txt", "r")

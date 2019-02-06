@@ -21,7 +21,8 @@ doneYears = []
 regex = re.compile('[^a-zA-Z]')
 stopwords = stopwords.words('english')
 
-inputFile = 'all_data_w_paragraphs_public_access.csv'
+inputFile = "all_data_v3.csv"
+#inputFile = 'all_data_w_paragraphs_public_access.csv'
 
 '''
 with open(inputFile, encoding='ISO-8859-1') as csvFile:

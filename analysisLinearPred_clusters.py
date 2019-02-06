@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import math
 
 csv.field_size_limit(sys.maxsize)
-input_file = 'all_data_v3.csv'
+input_file = 'all_data_w_paragraphs_public_access.csv'
 DOCUMENT_IND = 0
 SECTIONS_START_IND = 8
-OUTCOME_IND = 4
+OUTCOME_IND = 5
 
 # feature is list of sections, 1 for mentioned, 0 for not mentioned
 def feature_extractor(row):
@@ -16,7 +16,8 @@ def feature_extractor(row):
     #ind = [214,277,246,70,278,209,134,202,244,83,106,218,285,91,32,13,267,210,9,280,239,44,228,155,212,292,90,317,273,293]
     n = 0
     # creates a feature array using the sections + clustering info
-    for i in row[SECTIONS_START_IND:]:
+    # for i in row[SECTIONS_START_IND:]:
+    for i in row:
         #if n in ind or n > len(row[SECTIONS_START_IND:]) - 21:
         if i == '':
             features.append(0)
@@ -46,7 +47,7 @@ def learn_predictor(train_examples, test_examples, num_iters, eta):
                 # update weights
                 gradient_loss = -1 * features * value
                 weights -= (eta * gradient_loss)
-                #print(np.sum(weights))
+        print(np.sum(weights))
         print('Training Accuracy:', evaluate_predictor(train_examples, predictor))
         print('Testing Accuracy:', evaluate_predictor(test_examples, predictor))
 
@@ -83,6 +84,7 @@ def get_top_reject_sections(weights, num_sections):
 ################################  HELPER FUNCTIONS  ####################################
 
 matrix = np.loadtxt("clusters_data.txt")
+#matrix = np.loadtxt("clusters_scores.txt")
 
 # returns an array of (row,value) pairs, where value is +1 for APPROVED and -1 otherwise
 def create_examples():
@@ -92,13 +94,15 @@ def create_examples():
         next(reader)
         n = 0
         for row in reader:
+            #for i in matrix[n]:
+            #   row.append(i)
             for i in range(20):
                 if i == matrix[n]:
                     row.append("1")
                 else:
                     row.append("0")
             value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
-            row = row[:20]
+            row = row[-20:]
             examples.append((row, value))
             n += 1
     return np.array(examples)
