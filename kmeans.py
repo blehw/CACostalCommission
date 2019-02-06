@@ -107,7 +107,7 @@ def getMatrices():
 
 # turn each row into an example
 def convertMatricesToExamples(matrices):
-    fileName = 'lsa_popular_words_' + startYear + '.txt'
+    fileName = 'lsa_popular_words_1996.txt'
     with open(fileName) as f:
         popularWords = f.read().splitlines()
     f.close()

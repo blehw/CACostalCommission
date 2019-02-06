@@ -91,13 +91,9 @@ def create_examples():
         next(reader)
         n = 0
         for row in reader:
-            for i in range(20):
-                if i == matrix[n]:
-                    row.append("1")
-                else:
-                    row.append("0")
-            value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
-            examples.append((row, value))
+            if matrix[n] == 0:
+                value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
+                examples.append((row, value))
             n += 1
     return np.array(examples)
 

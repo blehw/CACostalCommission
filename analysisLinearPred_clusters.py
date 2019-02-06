@@ -23,13 +23,14 @@ def feature_extractor(row):
         else:
             features.append(float(i))
         n += 1
-    #while len(features) != 20:
-    #	features.append(0)
+    while len(features) != 20:
+    	features.append(0)
     return np.array(features)
 
 
 def learn_predictor(train_examples, test_examples, num_iters, eta):
-    weights = np.zeros(len(train_examples[0][0])-SECTIONS_START_IND).astype(float)
+    # weights = np.zeros(len(train_examples[0][0])-SECTIONS_START_IND).astype(float)
+    weights = np.zeros(20).astype(float)
     
     def predictor(row):
         return 1 if np.dot(weights, feature_extractor(row)) > 0 else -1
@@ -97,6 +98,7 @@ def create_examples():
                 else:
                     row.append("0")
             value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
+            row = row[:20]
             examples.append((row, value))
             n += 1
     return np.array(examples)
