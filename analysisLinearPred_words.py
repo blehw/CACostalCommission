@@ -7,10 +7,10 @@ import re
 from nltk.corpus import stopwords
 
 csv.field_size_limit(sys.maxsize)
-input_file = 'all_data_w_paragraphs_public_access.csv'
-DOCUMENT_IND = 0
-OUTCOME_IND = 5
-f = open("lsa_words/lsa_popular_words_.txt", "r")
+input_file = 'all_data_v3.csv'
+DOCUMENT_IND = 2
+OUTCOME_IND = 4
+f = open("lsa_words/lsa_popular_words_all.txt", "r")
 vocab = {}
 vocab_ind2word = {}
 index = 0
@@ -136,7 +136,7 @@ def main(args):
     # test_examples = examples[7*num_rows//10:]
     train_examples = examples[:9*len(examples)//10]
     test_examples = examples[9*len(examples)//10:]
-    num_iters = 5
+    num_iters = 100
     eta = 0.001
     weights = learn_predictor(train_examples, test_examples, num_iters, eta)
     top_accept_sections = get_top_accept_sections(weights, 100) # gets sections with highest weights
