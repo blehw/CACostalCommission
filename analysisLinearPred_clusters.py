@@ -24,7 +24,7 @@ def feature_extractor(row):
         else:
             features.append(float(i))
         n += 1
-    while len(features) != 20:
+    while len(features) != 500:
     	features.append(0)
     return np.array(features)
 
@@ -83,8 +83,8 @@ def get_top_reject_sections(weights, num_sections):
 
 ################################  HELPER FUNCTIONS  ####################################
 
-matrix = np.loadtxt("clusters_data.txt")
-#matrix = np.loadtxt("clusters_scores.txt")
+#matrix = np.loadtxt("clusters_data.txt")
+matrix = np.loadtxt("clusters_scores.txt")
 
 # returns an array of (row,value) pairs, where value is +1 for APPROVED and -1 otherwise
 def create_examples():
@@ -94,15 +94,17 @@ def create_examples():
         next(reader)
         n = 0
         for row in reader:
-            #for i in matrix[n]:
-            #   row.append(i)
+            for i in matrix[n]:
+               row.append(i)
+            '''
             for i in range(20):
                 if i == matrix[n]:
                     row.append("1")
                 else:
                     row.append("0")
+            '''
             value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
-            row = row[-20:]
+            row = row[-500:]
             examples.append((row, value))
             n += 1
     return np.array(examples)

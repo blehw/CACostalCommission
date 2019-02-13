@@ -78,11 +78,20 @@ def get_top_reject_sections(weights, num_sections):
         res.append(row[i+8])
     return res
 
+def get_top_confusing_sections(weights, num_sections):
+    inds = (np.absolute(weights)).argsort()[:num_sections]
+    with open(input_file, encoding='ISO-8859-1') as input:
+        reader = csv.reader(input)
+        row = next(reader)
+    res = []
+    for i in inds:
+        res.append(row[i+8])
+    return res
+
 
 ################################  HELPER FUNCTIONS  ####################################
 
 matrix = np.loadtxt("clusters_data.txt")
-print(matrix.size)
 
 # returns an array of (row,value) pairs, where value is +1 for APPROVED and -1 otherwise
 def create_examples():
@@ -92,6 +101,8 @@ def create_examples():
         next(reader)
         n = 0
         for row in reader:
+            for i in range(len(row)):
+                print(i, row[i])
             '''
             for i in range(20):
                 if i == matrix[n]:
@@ -102,7 +113,6 @@ def create_examples():
             value = 1 if 'APPROVED' in row[OUTCOME_IND] or 'CONCURRED' in row[OUTCOME_IND] else -1
             examples.append((row, value))
             n += 1
-        print(n)
     return np.array(examples)
 
 # Output error rates
@@ -113,9 +123,14 @@ def evaluate_predictor(examples, predictor):
     of misclassiied examples.
     '''
     error = 0
+    examples = create_examples()
+    #counts = np.zeros(len(examples[0][0])-SECTIONS_START_IND).astype(float)
     for row, value in examples:
         if predictor(row) != value:
             error += 1
+    #        counts += feature_extractor(row)
+    #top_confusing_sections = get_top_accept_sections(counts, 10)
+    #print("Most confusing sections:", top_confusing_sections)
     return 1 - (1.0 * error / len(examples))
 
 def row_count(filename):
@@ -136,8 +151,10 @@ def main(args):
     weights = learn_predictor(train_examples, test_examples, num_iters, eta)
     top_accept_sections = get_top_accept_sections(weights, 10) # gets sections with highest weights
     top_reject_sections = get_top_reject_sections(weights, 10)
+    top_confusing_sections = get_top_confusing_sections(weights, 10)
     print('Most important sections for acceptances:', top_accept_sections)
     print('Most important sections for rejections:', top_reject_sections)
+    print('Most confusing sections:', top_confusing_sections)
 
 
 if __name__ == '__main__':

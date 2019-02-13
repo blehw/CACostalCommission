@@ -139,10 +139,16 @@ def main(args):
     num_iters = 5
     eta = 0.001
     weights = learn_predictor(train_examples, test_examples, num_iters, eta)
-    top_accept_sections = get_top_accept_sections(weights, 10) # gets sections with highest weights
-    top_reject_sections = get_top_reject_sections(weights, 10)
-    print('Most important sections for acceptances:', top_accept_sections)
-    print('Most important sections for rejections:', top_reject_sections)
+    top_accept_sections = get_top_accept_sections(weights, 100) # gets sections with highest weights
+    top_reject_sections = get_top_reject_sections(weights, 100)
+    with open('top_accept_words.txt', 'w') as a:
+    	for item in top_accept_sections:
+        	a.write("%s\n" % item)
+    with open('top_reject_words.txt', 'w') as r:
+    	for item in top_reject_sections:
+        	r.write("%s\n" % item)
+    print('Most important words for acceptances:', top_accept_sections)
+    print('Most important words for rejections:', top_reject_sections)
     
 
 if __name__ == '__main__':

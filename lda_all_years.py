@@ -10,10 +10,10 @@ from bokeh.models import Label
 from bokeh.io import output_notebook
 
 inputFile = 'all_data_v3.csv'
-documentColNum = 0
+documentColNum = 2
 startYear = 2016
 endYear = 2016
-yearColNum = 2
+yearColNum = 1
 wordsToAnalyze = 1500
 
 allPopularWords = {}
@@ -29,7 +29,7 @@ for n in range(startYear, endYear + 1):
 regex = re.compile('[^a-zA-Z]')
 stopwords = stopwords.words('english')
 
-n_topics = 20
+n_topics = 500
 lda_model = LatentDirichletAllocation(n_components=n_topics,learning_method='online',random_state=0, verbose=0)
 
 def getMatrices():
@@ -121,6 +121,8 @@ def getMatrices():
             matrix = np.multiply(matrix,idfs)
 
             matrices.append(matrix)
+
+            np.savetxt("all_data/tf-idf_all_years.txt", matrix)
     csvFile.close()
     return matrices
 
